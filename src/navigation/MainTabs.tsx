@@ -42,7 +42,8 @@ export default function MainTabs() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const count = PAGES.length;
-  const translateX = useSharedValue(0);
+  // Start on page 0's offset directly (in RTL that's not 0) so the first frame isn't the wrong page.
+  const translateX = useSharedValue(isRTL ? -(count - 1) * width : 0);
   const dragStartX = useSharedValue(0);
 
   // Row offset that shows page `i`. In RTL the row is `row-reverse`, so page 0 sits at the far

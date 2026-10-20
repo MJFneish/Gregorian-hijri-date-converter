@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import type { LucideIcon } from 'lucide-react-native';
@@ -32,8 +32,13 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
   const visualIndex = isRTL ? options.length - 1 - selected : selected;
 
   const x = useSharedValue(0);
+  const measured = useRef(false);
   useEffect(() => {
-    x.value = withTiming(visualIndex * segmentWidth, { duration: 220 });
+    if (segmentWidth <= 0) return;
+    const target = visualIndex * segmentWidth;
+    // Jump into place on the first measurement (no slide-in on mount); animate later changes.
+    x.value = measured.current ? withTiming(target, { duration: 220 }) : target;
+    measured.current = true;
   }, [visualIndex, segmentWidth, x]);
   const indicator = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 

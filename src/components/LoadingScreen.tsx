@@ -58,7 +58,9 @@ function Star({ x, y, r, delay, still }: { x: number; y: number; r: number; dela
   );
 }
 
-function Glow({ size, top, left, color, drift, duration, still }: {
+function Glow({ id, size, top, left, color, drift, duration, still }: {
+  /** ASCII gradient id (react-native-svg `url(#…)`), unique per glow. */
+  id: string;
   size: number;
   top: number;
   left: number;
@@ -75,7 +77,6 @@ function Glow({ size, top, left, color, drift, duration, still }: {
   const style = useAnimatedStyle(() => ({
     transform: [{ translateX: t.value * drift }, { translateY: -t.value * drift * 0.6 }, { scale: 1 + t.value * 0.12 }],
   }));
-  const id = `glow-${size}-${top}`;
   return (
     <Animated.View pointerEvents="none" style={[{ position: 'absolute', top, left, width: size, height: size }, style]}>
       <Svg width={size} height={size}>
@@ -135,8 +136,8 @@ export function LoadingScreen({ onReady }: Props) {
       accessibilityRole="progressbar"
       accessibilityLabel={t('loading.label')}
     >
-      <Glow size={width * 1.1} top={-width * 0.35} left={-width * 0.4} color={brand.nightGlow} drift={30} duration={5200} still={still} />
-      <Glow size={width * 0.9} top={height * 0.62} left={width * 0.35} color="#6A4FD8" drift={-26} duration={6400} still={still} />
+      <Glow id="glowTop" size={width * 1.1} top={-width * 0.35} left={-width * 0.4} color={brand.nightGlow} drift={30} duration={5200} still={still} />
+      <Glow id="glowBottom" size={width * 0.9} top={height * 0.62} left={width * 0.35} color="#6A4FD8" drift={-26} duration={6400} still={still} />
       {STARS.map(([fx, fy, r, delay], i) => (
         <Star key={i} x={fx * width} y={fy * height} r={r} delay={delay} still={still} />
       ))}

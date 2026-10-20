@@ -33,6 +33,10 @@ interface Props {
 
 const clamp = (i: number, max: number) => Math.min(Math.max(i, 0), max);
 
+// ASCII-only ids for the SVG fade gradients — `url(#…)` lookups in react-native-svg shouldn't
+// depend on a (possibly Arabic) label.
+let nextGradientId = 0;
+
 /**
  * iOS-style scroll wheel. Native date pickers can't show Hijri months, so the converter uses
  * three of these per calendar.
@@ -118,7 +122,7 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
     if (e.nativeEvent.actionName === 'decrement') commit(lastReported.current - 1, true);
   };
 
-  const gradientId = `wheelFade-${accessibilityLabel}`;
+  const gradientId = useRef(`wheelFade${nextGradientId++}`).current;
 
   return (
     <View
