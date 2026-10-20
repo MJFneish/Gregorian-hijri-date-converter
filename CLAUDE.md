@@ -114,14 +114,27 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   row and the tab bar mirror together** (first tab on the right) — lexitoon proved that mirroring
   only one of them feels inconsistent. Screens reach tabs via `useTabPager().goToTab()`.
 - **Wheel picker** ([`WheelPicker.tsx`](./src/components/picker/WheelPicker.tsx)): native date
-  pickers can't show Hijri months. Plain virtualized FlatList + static selection band + SVG fades,
-  **not** per-row Reanimated styles (the year wheel has ~195 rows). Settles on momentum end or,
-  for slow drags, 120 ms after release. `adjustable` accessibility role with increment/decrement.
-  Padding trick: rows report `offset = i·h` while content has 2 rows of padding, so scroll offset
-  `i·h` centers row i.
-- **Converter state is a single JDN** ([`ConverterSection.tsx`](./src/components/home/ConverterSection.tsx)):
-  wheels show it in the input calendar, the result shows the other — switching direction keeps the
-  day; changing method/adjustment re-labels it.
+  pickers can't show Hijri months. A **plain ScrollView, not a FlatList** — the wheels sit inside
+  the Home screen's vertical ScrollView, and a same-direction VirtualizedList nested there
+  triggers RN's "VirtualizedLists should never be nested inside plain ScrollViews" error (the
+  first on-device run showed it). Lists are ≤ ~200 rows; rows are `memo`ized by emphasis level so
+  a centered-index change re-renders only 3–5 rows. Static selection band + SVG fades, **not**
+  per-row Reanimated styles. Settles on momentum end or, for slow drags, 120 ms after release.
+  `adjustable` accessibility role with increment/decrement. Content has 2 rows of padding, so
+  scroll offset `i·h` centers row i; initial position is applied once both `onLayout` and
+  `onContentSizeChange` have fired (Android ignores an earlier `scrollTo`).
+- **Converter = draft + Convert button** ([`ConverterSection.tsx`](./src/components/home/ConverterSection.tsx)),
+  per the user (2026-10-20): **don't convert while the wheels turn.** The wheels edit a *draft*
+  (a JDN + direction); **Convert** scrolls Home to the result card
+  ([`HomeScrollContext`](./src/components/home/HomeScrollContext.tsx) — `measureLayout` against
+  one content view wrapping every section, so its offset *is* the scroll position), shows
+  [`ResultSkeleton`](./src/components/home/ResultSkeleton.tsx) + "Converting…" for
+  `MIN_CONVERTING_MS` (550 ms), then applies and fades the result in. The lookup itself takes
+  well under 1 ms — the minimum duration is there so the feedback is readable and the scroll
+  finishes first. The result card always shows the last *applied* conversion and, when the
+  wheels/direction moved since, an "showing the previous result" note. Switching direction keeps
+  the draft's day; changing method/adjustment re-labels the applied result instantly. The busy
+  Convert button uses `PressableScale dimWhenDisabled={false}` (busy ≠ unavailable).
 - **Loading**: bootsplash (night `#110D2E`, 120 dp emblem) → `LoadingScreen`, whose first frame is
   identical, so `BootSplash.hide({ fade: false })` is invisible; then arrows spin, stars twinkle,
   min 1.2 s (`MIN_LOADING_VISIBLE_MS` in `App.tsx`). Respects reduced motion.
@@ -171,6 +184,40 @@ conversion arrows, on the indigo tile. Geometry lives in **two places that must 
   "3.31.6"` (Ninja 1.12.1, long-path aware)**; it was installed with
   `sdkmanager "cmake;3.31.6"` and AGP auto-downloads it elsewhere. Don't remove the pin.
 - `.gitattributes` forces LF on `android/gradlew` (this machine has `core.autocrlf=true`).
+
+### Found on the first emulator run (2026-10-20)
+
+- **Never size an `<Svg>` background with `width="100%"`/`height="100%"`** (or `%` inside it).
+  On Android it was resolved once and didn't follow its parent as content grew — the Today card's
+  gradient stopped at ~85% width / short of the bottom, leaving text and the watermark hanging
+  outside it. Use [`GradientFill`](./src/components/ui/GradientFill.tsx) (measures the parent with
+  onLayout, draws at pixel size) and give the parent a solid fallback `backgroundColor`.
+- **Don't toggle `backgroundColor` on a rounded view to show a selected state inside a ripple
+  `Pressable`** — the tab bar's pill rendered as a square after switching tabs (Fabric, Android).
+  The pill now keeps a permanently painted, rounded highlight layer and only toggles its
+  `opacity`; the tab buttons use a pressed-opacity instead of `android_ripple`. Other rounded
+  views (cards, tiles, chips) survived theme switches fine — this was specific to that combination.
+- **Same-direction VirtualizedList inside a ScrollView** → red "VirtualizedLists should never be
+  nested…" console error. The wheel picker is a plain ScrollView for this reason (see above).
+- **Two library warnings are patched with patch-package** (`patches/`, applied by `postinstall`):
+  - `react-native+0.87.1.patch` — adds `./src/private/*` to RN's `exports` (RN's own
+    `@react-native/virtualized-lists` imports `src/private/featureflags/…`; Metro warned on every
+    bundle). Same patch as lexitoon.
+  - `react-native-gesture-handler+3.2.1.patch` — creates the legacy `DrawerLayoutAndroid` wrapper
+    lazily, so importing gesture-handler no longer reads RN's deprecated `DrawerLayoutAndroid`
+    getter ("DrawerLayoutAndroid is deprecated…" on every launch). Metro loads gesture-handler's
+    TS source (`src/`, via its `react-native` field), so that's what the patch edits.
+  Re-check both when upgrading RN or gesture-handler; delete a patch once upstream fixes it.
+- RN 0.87's LogBox shows warnings only as "Open debugger to view warnings". To read them without a
+  debugger: `adb logcat -s ReactNativeJS:V` (every `console.*` lands there).
+- **"Rendered more hooks than during the previous render" with `performReactRefresh` in the
+  stack is a Fast Refresh artifact**, not an app bug: saving a component that gained/lost hooks
+  while the user is interacting makes React try to keep the old instance's state. Reload the app
+  (`r` in Metro). A clean relaunch + 10 rapid taps on the converter's direction toggle showed no
+  error. Only investigate if it reproduces after a full reload.
+- On Windows (no watchman) **Metro can hang after `yarn add` rewrites `node_modules` under it** —
+  `/status` stops answering and the app sits on the native splash. Restart it with
+  `yarn start --reset-cache` (the `--reset-cache` also matters after patch-package changes).
 - On Windows, run Gradle directly (`cd android && ./gradlew …`) — lexitoon found
   `npx react-native run-android`'s Gradle spawn unreliable here. See help.md.
 

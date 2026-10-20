@@ -71,7 +71,11 @@
     "copy": "Copy",
     "share": "Share",
     "copied": "Copied",
-    "shareFooter": "({{method}}) — Hijri Converter"
+    "shareFooter": "({{method}}) — Hijri Converter",
+    "convertButton": "Convert",
+    "converting": "Converting…",
+    "convertHint": "Converts the picked date and scrolls to the result",
+    "staleResult": "The date above changed — showing the previous result. Press Convert to update."
   },
   "between": {
     "title": "Days between",

@@ -2,3 +2,5 @@
 android/gradlew text eol=lf
 *.sh text eol=lf
 *.bat text eol=crlf
+# patch-package patches must keep LF, or applying them can fail after a CRLF checkout.
+patches/*.patch text eol=lf
