@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise -- month lengths are packed as 12-bit masks (see scripts/build-hijri-tables.js) */
 import type { MethodId } from './methods';
 import type { HijriDate } from './types';
 import { METHOD_TABLES, TABLE_FIRST_YEAR, TABLE_LAST_YEAR } from './tables.generated';

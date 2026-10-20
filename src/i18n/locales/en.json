@@ -1,0 +1,136 @@
+{
+  "app": {
+    "name": "Hijri Converter"
+  },
+  "loading": {
+    "label": "Loading",
+    "tagline": "Gregorian ⇄ Hijri, the Shia calendar"
+  },
+  "tabs": {
+    "home": "Converter",
+    "settings": "Settings"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "done": "Done",
+    "hijri": "Hijri",
+    "gregorian": "Gregorian"
+  },
+  "picker": {
+    "day": "Day",
+    "month": "Month",
+    "year": "Year"
+  },
+  "source": {
+    "official": "Official",
+    "calculated": "Calculated",
+    "approximate": "Approximate (±1 day)"
+  },
+  "methods": {
+    "iran": {
+      "name": "Iran official (Sayyed Khamenei's office)",
+      "short": "Iran official",
+      "description": "Month starts published in Iran from real crescent sightings (telescopes accepted). Exact from published data through Shawwal 1447; later months are calculated (91% exact, otherwise ±1 day)."
+    },
+    "fadlallah": {
+      "name": "Sayyed Fadlallah's office",
+      "short": "Fadlallah",
+      "description": "Astronomical calculation: the month begins once the crescent can be seen with the naked eye anywhere that shares the night with Lebanon."
+    },
+    "sistani": {
+      "name": "Sayyed Sistani's office",
+      "short": "Sistani",
+      "description": "Naked-eye sighting on the same horizon, calculated for Najaf. The office's announcement may differ by a day."
+    },
+    "ummalqura": {
+      "name": "Umm al-Qura (Saudi Arabia)",
+      "short": "Umm al-Qura",
+      "description": "Saudi Arabia's official calculated calendar, for reference."
+    }
+  },
+  "home": {
+    "subtitle": "Gregorian ⇄ Hijri",
+    "today": "Today",
+    "changeMethod": "Calculation method: {{method}}. Opens settings",
+    "eveOf": "Tonight is the eve of {{date}}",
+    "eveHint": "The Islamic night began at Maghrib; the date changes at midnight.",
+    "maghribAt": "Maghrib in Beirut at {{time}} — the night of the next Hijri day begins then",
+    "nextOccasion": "Next: {{name}} — {{when}}",
+    "tomorrow": "tomorrow",
+    "inDays": "in {{days}}",
+    "convert": "Convert",
+    "direction": "Conversion direction",
+    "toHijri": "To Hijri",
+    "toGregorian": "To Gregorian",
+    "pickGregorian": "Pick a Gregorian date",
+    "pickHijri": "Pick a Hijri date",
+    "goToToday": "Today",
+    "resultHijri": "Hijri date",
+    "resultGregorian": "Gregorian date",
+    "copy": "Copy",
+    "share": "Share",
+    "copied": "Copied",
+    "shareFooter": "({{method}}) — Hijri Converter"
+  },
+  "between": {
+    "title": "Days between",
+    "calendar": "Calendar for the dates",
+    "from": "From",
+    "to": "To",
+    "tapToChange": "Opens a date picker",
+    "setToday": "Set to today",
+    "swap": "Swap dates",
+    "daysLabel": "days in total",
+    "reversed": "The “from” date is after the “to” date."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "followSystem": "Match system theme",
+    "followSystemHint": "Switches between light and dark with your phone",
+    "light": "Light",
+    "dark": "Dark",
+    "method": "Calculation method",
+    "methodHint": "Which authority's calendar to follow. Shia authorities can start a month a day apart.",
+    "defaultTag": "Default",
+    "sunniTag": "Sunni reference",
+    "adjustment": "Hijri date adjustment",
+    "adjustmentMinus": "Decrease adjustment",
+    "adjustmentPlus": "Increase adjustment",
+    "adjustmentUnit": "days",
+    "adjustmentHint": "If your local announcement differs from the calculation, shift every Hijri date by up to two days.",
+    "adjustmentPreview": "Today will show as {{date}}",
+    "help": "Help",
+    "showIntro": "Show the introduction again",
+    "about": "About",
+    "version": "Version {{version}}",
+    "aboutBody": "Converts dates between the Gregorian and Hijri calendars following Shia calendar authorities, fully offline. Iran's official dates come from the published record; the other methods compute crescent visibility astronomically (Odeh's criterion).",
+    "credits": "Iranian month data: the qamari project (CC0). Astronomy: astronomy-engine (MIT).",
+    "disclaimer": "Calculated dates can differ by a day from what your marja's office announces, especially for future months. Follow the official announcement for religious obligations."
+  },
+  "onboarding": {
+    "switchLanguage": "Switch language",
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get started",
+    "progress": "Page {{current}} of {{total}}",
+    "welcome": {
+      "title": "Welcome",
+      "body": "Convert any date between the Gregorian and Hijri calendars, the way the Shia community counts the months."
+    },
+    "convert": {
+      "title": "Both directions",
+      "body": "Choose “To Hijri” or “To Gregorian” and turn the wheels. The result updates instantly, and you can copy or share it."
+    },
+    "methods": {
+      "title": "Your marja's calendar",
+      "body": "Months start by crescent sighting, so authorities can differ by a day. Iran's official calendar is the default; switch to Fadlallah, Sistani or Umm al-Qura, or adjust by ±2 days, in Settings."
+    },
+    "occasions": {
+      "title": "Occasions and nights",
+      "body": "See Shia occasions on any date, what's coming next, and when tonight is already the eve of the next Hijri day after Maghrib."
+    }
+  }
+}
