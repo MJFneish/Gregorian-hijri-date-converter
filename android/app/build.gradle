@@ -78,6 +78,16 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.devlance.hijriconverter"
+
+    // CMake 3.31.x bundles Ninja 1.12, which honours Windows long paths (LongPathsEnabled=1).
+    // The SDK default (3.22.1 / Ninja 1.10) fails with "Filename longer than 260 characters":
+    // codegen object paths embed this project's (long) path twice. AGP downloads it if missing.
+    externalNativeBuild {
+        cmake {
+            version "3.31.6"
+        }
+    }
+
     defaultConfig {
         applicationId "com.devlance.hijriconverter"
         minSdkVersion rootProject.ext.minSdkVersion

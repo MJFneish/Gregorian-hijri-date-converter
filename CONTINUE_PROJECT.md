@@ -51,7 +51,14 @@ exact over 573 real months; Fadlallah rule → 5/5 known dates. Details in CLAUD
   icon, docs, bump script, project skills.
 - **Verified**: `yarn test` 34/34 (engine), `yarn typecheck` clean, `yarn lint` 0 errors
   (style warnings only).
-- **Android build**: BUILD_RESULT_PLACEHOLDER
+- **Android build**: `./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a` →
+  **BUILD SUCCESSFUL** (3 m 18 s), `android/app/build/outputs/apk/release/app-release.apk`
+  (~31 MB, arm64 only, signed with the template debug key, JS bundle Hermes-compiled — installs
+  and runs without Metro: `adb install -r …/app-release.apk`). The *first* attempt failed with
+  Windows' 260-char path limit in the codegen C++ build; fixed by pinning CMake 3.31.6 (see
+  CLAUDE.md "Known gotchas"). One harmless Metro warning remains (a library imports
+  `react-native/src/private/featureflags/…`, which isn't in RN's `exports`; file-based fallback
+  works — lexitoon silenced the same warning with a patch-package patch).
 - **Not verified**: anything visual/interactive on a real device or emulator — no device was
   connected and the user asked for no emulator/screenshots this session. The first `yarn android`
   run is the first time anyone sees the UI. Most likely things to need tuning on-device: wheel

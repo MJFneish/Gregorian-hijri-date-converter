@@ -101,6 +101,16 @@ adb shell am start -n com.devlance.hijriconverter/.MainActivity
 
 Gradle needs JDK 17 (`JAVA_HOME=C:\Program Files\Java\jdk-17` on this machine).
 
+**"ninja: error: Stat(…): Filename longer than 260 characters"** — Windows path limit hit by the
+native codegen build (this repo's path is long). Already fixed: `android/app/build.gradle` pins
+CMake **3.31.6** (Ninja 1.12, long-path aware). Requirements if it ever comes back:
+
+```bash
+sdkmanager "cmake;3.31.6"                         # (AGP also auto-downloads it)
+reg query HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled   # must be 0x1
+cd android && ./gradlew clean && cd ..            # drop the stale .cxx built with the old Ninja
+```
+
 ---
 
 ## 🔑 Release keystores (Android)

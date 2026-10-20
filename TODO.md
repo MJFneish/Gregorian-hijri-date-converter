@@ -43,7 +43,9 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
 
 ## Phase 5 — Verification
 - [x] `yarn test` (34/34), `yarn typecheck`, `yarn lint` (0 errors)
-- [ ] Android release build (arm64-v8a) — see CONTINUE_PROJECT.md for the result of the first build
+- [x] Android release build (arm64-v8a) — BUILD SUCCESSFUL after pinning CMake 3.31.6 (Windows
+      260-char path limit in the codegen build; see CLAUDE.md "Known gotchas")
+- [x] `yarn bump patch --dry-run` → 1.0.0 → 1.0.1, versionCode 1 → 2; unknown args rejected
 - [ ] **On-device run** (emulator or phone): onboarding → loading → converter wheels feel, pager
       swipe incl. Arabic, theme switch, method switch, copy/share, days-between sheet
 - [ ] iOS build (needs macOS — not possible from this Windows machine; `pod install` never run)

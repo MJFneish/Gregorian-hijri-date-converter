@@ -161,6 +161,15 @@ conversion arrows, on the indigo tile. Geometry lives in **two places that must 
   bubble) needs a higher `elevation` than the cards it overlaps.
 - `MainActivity.onCreate` uses `RNScreensFragmentFactory` + `RNBootSplash.init` (react-native-screens
   ≥ 4.16 variant from the bootsplash docs). Don't drop either.
+- **"ninja: error: Stat(…): Filename longer than 260 characters"** on the first build. The
+  New-Architecture codegen object paths embed the project path twice
+  (`…/.cxx/RelWithDebInfo/<hash>/arm64-v8a/rngesturehandler_codegen_autolinked_build/CMakeFiles/…/D_/workspace/me/Gregorian-hijri-date-converter/node_modules/react-native-gesture-handler/shared/shadowNodes/…`,
+  393 chars). CMake only hash-shortens object paths when the result fits in 250 chars, and this
+  project's path is 22 chars longer than lexitoon's — just enough to break it. Windows
+  `LongPathsEnabled` is already 1 on this machine, but the SDK's default CMake 3.22.1 bundles Ninja
+  1.10.2, which ignores it. **Fix: `android/app/build.gradle` pins `externalNativeBuild.cmake.version
+  "3.31.6"` (Ninja 1.12.1, long-path aware)**; it was installed with
+  `sdkmanager "cmake;3.31.6"` and AGP auto-downloads it elsewhere. Don't remove the pin.
 - `.gitattributes` forces LF on `android/gradlew` (this machine has `core.autocrlf=true`).
 - On Windows, run Gradle directly (`cd android && ./gradlew …`) — lexitoon found
   `npx react-native run-android`'s Gradle spawn unreliable here. See help.md.
