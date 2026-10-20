@@ -91,13 +91,41 @@ adb kill-server && adb start-server   # if it shows "offline"
 lexitoon found that `npx react-native run-android` can fail on this machine with
 `'gradlew.bat' is not recognized` (a Node child-process quirk). Build with Gradle directly:
 
+> ⚠️ `installDebug` / `adb install` need a **running emulator or a USB-connected phone** — with
+> nothing attached the build succeeds but the install step fails with
+> `DeviceException: No connected devices!`. Check with `adb devices` first.
+
 ```bash
-cd android && ./gradlew installDebug && cd ..          # debug build on the connected device (then `yarn start`)
-cd android && ./gradlew assembleRelease && cd ..       # standalone APK → android/app/build/outputs/apk/release/
-cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a && cd ..   # faster: phone ABI only
+# 1. Attach a device — either start an emulator (AVDs on this machine: Pixel_4a, Pixel_7, Pixel_8a, Medium_Phone_API_36.0)…
+emulator -avd Pixel_8a          # full path: $ANDROID_HOME/emulator/emulator.exe — leave it running
+# …or plug in the phone with Developer options → USB debugging on, and accept the prompt on the phone
+adb devices                     # must list a device as "device" (not "unauthorized"/"offline")
+
+# 2a. Debug build (needs Metro running for the JS)
+yarn start                                             # terminal 1
+cd android && ./gradlew installDebug && cd ..          # terminal 2 — builds + installs
+adb reverse tcp:8081 tcp:8081                          # phone over USB → Metro on this PC
+
+# 2b. Standalone release APK (no Metro needed)
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a && cd ..   # phone ABI (fast)
+cd android && ./gradlew assembleRelease && cd ..       # all ABIs (also runs on x86_64 emulators)
 adb install -r android/app/build/outputs/apk/release/app-release.apk
 adb shell am start -n com.devlance.hijriconverter/.MainActivity
+
+# Only build, no device needed
+cd android && ./gradlew assembleDebug && cd ..         # → android/app/build/outputs/apk/debug/app-debug.apk
 ```
+
+**PowerShell (VS Code's default terminal on Windows):** Windows PowerShell 5.1 has no `&&`, and
+needs `.\` for local scripts — use `;` instead:
+
+```powershell
+cd android; .\gradlew installDebug; cd ..
+cd android; .\gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a; cd ..
+```
+
+The `arm64-v8a` release APK runs on real phones only — x86_64 emulators need the all-ABI build
+(or use the debug build, which includes every ABI).
 
 Gradle needs JDK 17 (`JAVA_HOME=C:\Program Files\Java\jdk-17` on this machine).
 
