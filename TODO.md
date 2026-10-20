@@ -46,8 +46,13 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
 - [x] Android release build (arm64-v8a) — BUILD SUCCESSFUL after pinning CMake 3.31.6 (Windows
       260-char path limit in the codegen build; see CLAUDE.md "Known gotchas")
 - [x] `yarn bump patch --dry-run` → 1.0.0 → 1.0.1, versionCode 1 → 2; unknown args rejected
-- [ ] **On-device run** (emulator or phone): onboarding → loading → converter wheels feel, pager
-      swipe incl. Arabic, theme switch, method switch, copy/share, days-between sheet
+- [x] **Emulator run** (Pixel, API 36, debug build, 2026-10-20): loading → Home, Today card,
+      wheels (drag + snap), direction switch, result + occasion badge, days-between + sheet, tab
+      swipe (EN and mirrored AR), Settings, light/dark switch, Arabic, onboarding replay — all
+      working; launch log free of warnings/errors. Fixed along the way: Today card gradient
+      overflow, nested-VirtualizedList error, two library warnings (patch-package), square tab
+      pill, invisible dark-mode switch, onboarding slide-3 landscape edge, "AH" wrapping alone
+- [ ] Physical phone run (release APK) + copy/share sheet on a real device
 - [ ] iOS build (needs macOS — not possible from this Windows machine; `pod install` never run)
 
 ## Ideas / not built (ask the user before building)

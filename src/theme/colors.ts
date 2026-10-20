@@ -31,6 +31,9 @@ export const lightTheme = {
   onHeroMuted: 'rgba(255, 255, 255, 0.78)',
   heroGold: '#F2C468',
   scrim: 'rgba(12, 10, 30, 0.45)',
+  /** Switch "off" state — the default surfaces are too close to the card colour to read. */
+  switchTrackOff: '#C9C4E0',
+  switchThumbOff: '#FFFFFF',
 };
 
 export type ThemeColors = typeof lightTheme;
@@ -60,6 +63,8 @@ export const darkTheme: ThemeColors = {
   onHeroMuted: 'rgba(255, 255, 255, 0.75)',
   heroGold: '#F2C468',
   scrim: 'rgba(0, 0, 0, 0.6)',
+  switchTrackOff: '#3A3566',
+  switchThumbOff: '#A9A5C8',
 };
 
 /** Fixed brand night colors for the native splash + JS loading screen (same in both themes, so

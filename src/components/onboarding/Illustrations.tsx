@@ -154,6 +154,7 @@ export function WelcomeArt({ size }: ArtProps) {
 }
 
 // 2 ── Convert: a Gregorian and a Hijri calendar page, swap arrows between them.
+const SWAP_SIZE = 80;
 function CalendarPage({ header, big, sub, color, float, phase }: {
   header: string;
   big: string;
@@ -198,11 +199,11 @@ export function ConvertArt({ size, lang }: ArtProps) {
           phase={1}
         />
         <Animated.View style={[styles.swapIcon, spinStyle]}>
-          <Svg width={64} height={64} viewBox="0 0 100 100">
+          <Svg width={SWAP_SIZE} height={SWAP_SIZE} viewBox="0 0 100 100">
             {ARROWS.map((a, i) => (
               <G key={i}>
-                <Path d={a.arc} stroke={brand.moonlight} strokeWidth={6} fill="none" strokeLinecap="round" />
-                <Path d={a.head} stroke={brand.moonlight} strokeWidth={6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                <Path d={a.arc} stroke={brand.moonlight} strokeWidth={7} fill="none" strokeLinecap="round" />
+                <Path d={a.head} stroke={brand.moonlight} strokeWidth={7} fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </G>
             ))}
           </Svg>
@@ -328,5 +329,5 @@ const styles = StyleSheet.create({
   pageHeaderText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   pageBig: { fontSize: 44, fontWeight: '800', color: '#16132B', marginTop: 4 },
   pageSub: { fontSize: 12, fontWeight: '600', color: '#5B5873', paddingHorizontal: 6 },
-  swapIcon: { width: 64, height: 64 },
+  swapIcon: { width: SWAP_SIZE, height: SWAP_SIZE },
 });

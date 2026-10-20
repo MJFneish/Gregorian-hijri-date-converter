@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  FlatList,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -37,26 +37,65 @@ const clamp = (i: number, max: number) => Math.min(Math.max(i, 0), max);
 // depend on a (possibly Arabic) label.
 let nextGradientId = 0;
 
+/** 0 = centered row, 1 = its neighbours, 2 = further out. */
+type Emphasis = 0 | 1 | 2;
+
+/** Memoized so a change of the centered row only re-renders the 3–5 rows whose emphasis changed,
+ * not every row of the year wheel. */
+const WheelRow = memo(function WheelRow({
+  label,
+  index,
+  emphasis,
+  onPressRow,
+}: {
+  label: string;
+  index: number;
+  emphasis: Emphasis;
+  onPressRow: (index: number) => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable style={styles.item} onPress={() => onPressRow(index)} importantForAccessibility="no">
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.75}
+        style={[
+          typography.body,
+          styles.itemText,
+          emphasis === 0
+            ? [styles.centered, { color: colors.text }]
+            : { color: colors.textMuted, opacity: emphasis === 1 ? 0.85 : 0.55 },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+});
+
 /**
  * iOS-style scroll wheel. Native date pickers can't show Hijri months, so the converter uses
  * three of these per calendar.
  *
- * Deliberately a plain virtualized FlatList with a static selection band + fade overlays rather
- * than per-row animated styles: the year wheel has ~195 rows, and a Reanimated style per row
- * would recompute all of them every scroll frame. Only the centered row's emphasis is React state,
- * updated when the centered index changes (not every pixel).
+ * A plain ScrollView, deliberately not a FlatList: the wheels live inside the Home screen's
+ * vertical ScrollView, and a same-direction VirtualizedList nested in a ScrollView breaks
+ * windowing (React Native warns about it). The lists are small (≤ ~200 years) and every row is
+ * a memoized one-line Text, so virtualization isn't needed. A static selection band + fade
+ * overlays replace per-row animated styles; only the centered index is React state, updated when
+ * it changes (not every pixel).
  *
- * The padding trick: rows report `offset = index * height` from getItemLayout while the content
- * has `PAD` padding on top, so scroll offset `i * height` puts row `i` exactly in the middle — and
- * `initialScrollIndex` / `scrollToOffset` work without extra math.
+ * Geometry: the content has `PAD` (2 rows) of padding top and bottom, so scroll offset
+ * `i * height` puts row `i` exactly in the middle.
  */
 export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel, fadeColor }: Props) {
   const { colors } = useTheme();
-  const listRef = useRef<FlatList<string>>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const lastReported = useRef(selectedIndex);
   const scrollY = useRef(selectedIndex * WHEEL_ITEM_HEIGHT);
   const centerRef = useRef(selectedIndex);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const positioned = useRef({ layout: false, content: false, done: false });
   const [centerIndex, setCenterIndex] = useState(selectedIndex);
   const maxIndex = items.length - 1;
 
@@ -67,12 +106,23 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
     }
   }, []);
 
+  // Initial position: scroll once both the ScrollView and its content have been laid out
+  // (Android ignores scrollTo before that; `contentOffset` covers iOS's first frame).
+  const positionInitially = (part: 'layout' | 'content') => {
+    const p = positioned.current;
+    p[part] = true;
+    if (p.layout && p.content && !p.done) {
+      p.done = true;
+      scrollRef.current?.scrollTo({ y: lastReported.current * WHEEL_ITEM_HEIGHT, animated: false });
+    }
+  };
+
   // Follow changes made from outside (Today button, day clamped by a shorter month, etc.).
   useEffect(() => {
     if (selectedIndex !== lastReported.current) {
       lastReported.current = selectedIndex;
       setCenter(selectedIndex);
-      listRef.current?.scrollToOffset({ offset: selectedIndex * WHEEL_ITEM_HEIGHT, animated: true });
+      scrollRef.current?.scrollTo({ y: selectedIndex * WHEEL_ITEM_HEIGHT, animated: true });
     }
   }, [selectedIndex, setCenter]);
 
@@ -86,7 +136,7 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
   const commit = useCallback(
     (index: number, scroll: boolean) => {
       const i = clamp(index, maxIndex);
-      if (scroll) listRef.current?.scrollToOffset({ offset: i * WHEEL_ITEM_HEIGHT, animated: true });
+      if (scroll) scrollRef.current?.scrollTo({ y: i * WHEEL_ITEM_HEIGHT, animated: true });
       setCenter(i);
       if (i !== lastReported.current) {
         lastReported.current = i;
@@ -95,6 +145,8 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
     },
     [maxIndex, onChange, setCenter],
   );
+
+  const onPressRow = useCallback((index: number) => commit(index, true), [commit]);
 
   const settle = useCallback(
     (y: number) => {
@@ -135,16 +187,12 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
       onAccessibilityAction={onAccessibilityAction}
     >
       <View pointerEvents="none" style={[styles.band, { backgroundColor: colors.primarySoft }]} />
-      <FlatList
-        ref={listRef}
-        data={items as string[]}
-        keyExtractor={(_, i) => String(i)}
-        extraData={centerIndex}
-        getItemLayout={(_, index) => ({ length: WHEEL_ITEM_HEIGHT, offset: WHEEL_ITEM_HEIGHT * index, index })}
-        initialScrollIndex={clamp(selectedIndex, maxIndex)}
-        initialNumToRender={15}
-        windowSize={7}
-        contentContainerStyle={{ paddingVertical: PAD }}
+      <ScrollView
+        ref={scrollRef}
+        contentOffset={{ x: 0, y: selectedIndex * WHEEL_ITEM_HEIGHT }}
+        onLayout={() => positionInitially('layout')}
+        onContentSizeChange={() => positionInitially('content')}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         snapToInterval={WHEEL_ITEM_HEIGHT}
         decelerationRate={Platform.OS === 'ios' ? 'fast' : 0.985}
@@ -159,45 +207,34 @@ export function WheelPicker({ items, selectedIndex, onChange, accessibilityLabel
         }}
         onMomentumScrollBegin={cancelSettle}
         onMomentumScrollEnd={e => settle(e.nativeEvent.contentOffset.y)}
-        renderItem={({ item, index }) => {
-          const centered = index === centerIndex;
-          return (
-            <Pressable style={styles.item} onPress={() => commit(index, true)} importantForAccessibility="no">
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.75}
-                style={[
-                  typography.body,
-                  styles.itemText,
-                  centered
-                    ? { color: colors.text, fontWeight: '700', fontSize: 18 }
-                    : { color: colors.textMuted, opacity: Math.abs(index - centerIndex) > 1 ? 0.55 : 0.85 },
-                ]}
-              >
-                {item}
-              </Text>
-            </Pressable>
-          );
-        }}
-      />
+      >
+        {items.map((label, index) => (
+          <WheelRow
+            key={index}
+            label={label}
+            index={index}
+            emphasis={Math.min(Math.abs(index - centerIndex), 2) as Emphasis}
+            onPressRow={onPressRow}
+          />
+        ))}
+      </ScrollView>
       <Svg pointerEvents="none" style={styles.fadeTop} width="100%" height={PAD}>
         <Defs>
-          <LinearGradient id={`${gradientId}-t`} x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={`${gradientId}t`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={fadeColor} stopOpacity={0.95} />
             <Stop offset="1" stopColor={fadeColor} stopOpacity={0} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height={PAD} fill={`url(#${gradientId}-t)`} />
+        <Rect x="0" y="0" width="100%" height={PAD} fill={`url(#${gradientId}t)`} />
       </Svg>
       <Svg pointerEvents="none" style={styles.fadeBottom} width="100%" height={PAD}>
         <Defs>
-          <LinearGradient id={`${gradientId}-b`} x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={`${gradientId}b`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={fadeColor} stopOpacity={0} />
             <Stop offset="1" stopColor={fadeColor} stopOpacity={0.95} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height={PAD} fill={`url(#${gradientId}-b)`} />
+        <Rect x="0" y="0" width="100%" height={PAD} fill={`url(#${gradientId}b)`} />
       </Svg>
     </View>
   );
@@ -208,6 +245,7 @@ const styles = StyleSheet.create({
     height: WHEEL_ITEM_HEIGHT * VISIBLE_ROWS,
     overflow: 'hidden',
   },
+  content: { paddingVertical: PAD },
   band: {
     position: 'absolute',
     top: PAD,
@@ -223,6 +261,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   itemText: { textAlign: 'center' },
+  centered: { fontWeight: '700', fontSize: 18 },
   fadeTop: { position: 'absolute', top: 0, left: 0, right: 0 },
   fadeBottom: { position: 'absolute', bottom: 0, left: 0, right: 0 },
 });

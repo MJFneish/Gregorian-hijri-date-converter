@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native-gesture-handler/src/components/GestureComponents.tsx b/node_modules/react-native-gesture-handler/src/components/GestureComponents.tsx
+index c0dde9f..8c0061f 100644
+--- a/node_modules/react-native-gesture-handler/src/components/GestureComponents.tsx
++++ b/node_modules/react-native-gesture-handler/src/components/GestureComponents.tsx
+@@ -99,12 +99,21 @@ export type LegacyTextInput = typeof LegacyTextInput & RNTextInput;
+ /**
+  * @deprecated use `DrawerLayoutAndroid` instead
+  */
++// Patched (hijri-converter): the wrapper is created on first render instead of at import time.
++// Creating it eagerly reads React Native's deprecated `DrawerLayoutAndroid` getter, which logs a
++// deprecation warning on every app start even when no drawer is ever used.
++let legacyDrawerLayoutAndroidImpl: React.ComponentType<any> | null = null;
+ export const LegacyDrawerLayoutAndroid: React.ComponentType<
+   PropsWithChildren<RNDrawerLayoutAndroidProps> & NativeViewGestureHandlerProps
+-> = createNativeWrapper<PropsWithChildren<RNDrawerLayoutAndroidProps>>(
+-  RNDrawerLayoutAndroid,
+-  { disallowInterruption: true }
+-);
++> = React.forwardRef<unknown, any>((props, ref) => {
++  if (!legacyDrawerLayoutAndroidImpl) {
++    legacyDrawerLayoutAndroidImpl = createNativeWrapper<
++      PropsWithChildren<RNDrawerLayoutAndroidProps>
++    >(RNDrawerLayoutAndroid, { disallowInterruption: true });
++  }
++  const Impl = legacyDrawerLayoutAndroidImpl;
++  return <Impl {...props} ref={ref} />;
++}) as any;
+ // eslint-disable-next-line @typescript-eslint/no-redeclare
+ export type LegacyDrawerLayoutAndroid = typeof LegacyDrawerLayoutAndroid &
+   RNDrawerLayoutAndroid;

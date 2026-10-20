@@ -105,8 +105,8 @@ export default function SettingsScreen() {
             <Switch
               value={followSystem}
               onValueChange={value => setThemeMode(value ? 'system' : isDark ? 'dark' : 'light')}
-              trackColor={{ false: colors.surfaceAlt, true: colors.primary }}
-              thumbColor={colors.surface}
+              trackColor={{ false: colors.switchTrackOff, true: colors.primary }}
+              thumbColor={followSystem ? colors.onPrimary : colors.switchThumbOff}
               accessibilityLabel={t('settings.followSystem')}
             />
           </View>

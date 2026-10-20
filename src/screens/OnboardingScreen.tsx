@@ -14,10 +14,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeIn, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { ArrowLeft, ArrowRight, Check, Languages } from 'lucide-react-native';
 
 import { ConvertArt, MethodsArt, OccasionsArt, WelcomeArt } from '../components/onboarding/Illustrations';
+import { GradientFill } from '../components/ui/GradientFill';
 import { PressableScale } from '../components/ui/PressableScale';
 import { useDirection } from '../hooks/useDirection';
 import type { Language } from '../i18n/language';
@@ -27,11 +27,14 @@ import { useTheme } from '../theme/useTheme';
 import { radius, spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
+// `ground`: a landscape whose hills must run to the panel's bottom and side edges — drawn at the
+// panel's full width and anchored to its bottom, instead of a centered square that left a hard
+// edge with gradient showing underneath (seen on the emulator).
 const SLIDES = [
-  { key: 'welcome', Art: WelcomeArt },
-  { key: 'convert', Art: ConvertArt },
-  { key: 'methods', Art: MethodsArt },
-  { key: 'occasions', Art: OccasionsArt },
+  { key: 'welcome', Art: WelcomeArt, ground: false },
+  { key: 'convert', Art: ConvertArt, ground: false },
+  { key: 'methods', Art: MethodsArt, ground: true },
+  { key: 'occasions', Art: OccasionsArt, ground: false },
 ] as const;
 
 type Slide = (typeof SLIDES)[number];
@@ -129,17 +132,15 @@ export default function OnboardingScreen() {
         onMomentumScrollEnd={onMomentumEnd}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
-            <View style={[styles.sky, { width: width - spacing.xl * 2 }]}>
-              <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
-                <Defs>
-                  <LinearGradient id={`sky-${item.key}`} x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0" stopColor={colors.heroFrom} />
-                    <Stop offset="1" stopColor={colors.heroTo} />
-                  </LinearGradient>
-                </Defs>
-                <Rect x="0" y="0" width="100%" height="100%" fill={`url(#sky-${item.key})`} />
-              </Svg>
-              <item.Art size={artSize} lang={lang} />
+            <View style={[styles.sky, { width: width - spacing.xl * 2, backgroundColor: colors.heroFrom }]}>
+              <GradientFill id={`sky${item.key}`} from={colors.heroFrom} to={colors.heroTo} />
+              {item.ground ? (
+                <View style={styles.groundArt}>
+                  <item.Art size={width - spacing.xl * 2} lang={lang} />
+                </View>
+              ) : (
+                <item.Art size={artSize} lang={lang} />
+              )}
             </View>
             <Animated.View entering={FadeIn.duration(300)} style={styles.copy}>
               <Text style={[typography.displayMedium, { color: colors.text, textAlign: 'center' }]} accessibilityRole="header">
@@ -204,6 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  groundArt: { position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center' },
   copy: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.lg, maxWidth: 520 },
   bottomBar: {
     alignItems: 'center',

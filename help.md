@@ -75,6 +75,32 @@ re-writes `AndroidManifest.xml` / `styles.xml` formatting — check `git diff` a
 
 ---
 
+## 🩹 Patched libraries
+
+`patches/` holds two patch-package patches (see CLAUDE.md "Found on the first emulator run"),
+re-applied automatically by `postinstall` after every `yarn install`. To re-apply by hand:
+
+```bash
+npx patch-package
+```
+
+---
+
+## 🪵 Reading console warnings/errors
+
+RN 0.87 only says "Open debugger to view warnings" in the app. Without a debugger:
+
+```bash
+adb logcat -c                                     # clear, then reproduce
+adb logcat -s ReactNativeJS:V ReactNative:W AndroidRuntime:E
+```
+
+If the app hangs on the splash in debug, check Metro answers: `curl http://localhost:8081/status`
+→ `packager-status:running`. No answer = Metro is stuck (common after `yarn add` on Windows):
+close it and run `yarn start --reset-cache`.
+
+---
+
 ## 📵 "Unable to load script" / Metro connection issues
 
 ```bash

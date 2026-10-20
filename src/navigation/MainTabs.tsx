@@ -11,7 +11,7 @@ import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useDirection } from '../hooks/useDirection';
 import { useTheme } from '../theme/useTheme';
-import { radius, spacing } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { TabPagerContext } from './TabPagerContext';
 
@@ -135,14 +135,21 @@ export default function MainTabs() {
             return (
               <Pressable
                 key={key}
-                style={styles.tabButton}
+                style={({ pressed }) => [styles.tabButton, pressed && styles.tabPressed]}
                 onPress={() => goToTab(index)}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: active }}
                 accessibilityLabel={t(labelKey)}
-                android_ripple={{ color: colors.primarySoft, borderless: true }}
               >
-                <View style={[styles.iconPill, active && { backgroundColor: colors.primarySoft }]}>
+                <View style={styles.iconPill}>
+                  {/* The highlight is always painted and only its opacity toggles. Toggling the pill's
+                      own backgroundColor after mount (inside a ripple Pressable) rendered it as a
+                      square on Android/Fabric — seen on the emulator; opacity never touches the
+                      rounded background drawable. */}
+                  <View
+                    pointerEvents="none"
+                    style={[styles.pillHighlight, { backgroundColor: colors.primarySoft, opacity: active ? 1 : 0 }]}
+                  />
                   <Icon size={22} color={color} strokeWidth={active ? 2.4 : 2} />
                 </View>
                 <Text style={[typography.caption, { color, fontWeight: active ? '700' : '500' }]}>{t(labelKey)}</Text>
@@ -170,9 +177,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xs,
     gap: 2,
   },
+  tabPressed: { opacity: 0.6 },
   iconPill: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
+  },
+  pillHighlight: {
+    ...StyleSheet.absoluteFill,
+    // Half the 30dp pill height.
+    borderRadius: 15,
   },
 });

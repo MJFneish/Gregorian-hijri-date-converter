@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { CalendarClock, ChevronLeft, ChevronRight, MoonStar, Sunset } from 'lucide-react-native';
 
 import { formatGregorian, formatHijri, formatTime } from '../../core/format';
@@ -17,6 +17,14 @@ import { elevation } from '../../theme/elevation';
 import { radius, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { OccasionBadge, SourceBadge } from '../badges';
+import { GradientFill } from '../ui/GradientFill';
+
+const HERO_STARS = [
+  [0.12, 0.08, 1.6, 0.7],
+  [0.3, 0.04, 1.1, 0.5],
+  [0.58, 0.06, 1.3, 0.6],
+  [0.92, 0.6, 1.2, 0.5],
+] as const;
 
 interface Props {
   /** Opens Settings (the method chip). */
@@ -39,20 +47,8 @@ export function TodayCard({ onPressMethod }: Props) {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <View style={[styles.card, elevation(colors.cardShadow, 2)]}>
-      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
-        <Defs>
-          <LinearGradient id="todayHero" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={colors.heroFrom} />
-            <Stop offset="1" stopColor={colors.heroTo} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#todayHero)" />
-        <Circle cx="12%" cy="18%" r="1.6" fill="#FFFFFF" opacity={0.7} />
-        <Circle cx="30%" cy="8%" r="1.1" fill="#FFFFFF" opacity={0.5} />
-        <Circle cx="58%" cy="12%" r="1.3" fill="#FFFFFF" opacity={0.6} />
-        <Circle cx="92%" cy="60%" r="1.2" fill="#FFFFFF" opacity={0.5} />
-      </Svg>
+    <View style={[styles.card, { backgroundColor: colors.heroFrom }, elevation(colors.cardShadow, 2)]}>
+      <GradientFill id="todayHero" from={colors.heroFrom} to={colors.heroTo} stars={HERO_STARS} />
       {/* Crescent watermark in the trailing corner. */}
       <Svg
         pointerEvents="none"
@@ -65,7 +61,7 @@ export function TodayCard({ onPressMethod }: Props) {
       </Svg>
 
       <View style={[styles.topRow, { flexDirection: rowDirection }]}>
-        <Text style={[typography.label, { color: colors.onHeroMuted, letterSpacing: isRTL ? 0 : 1 }]}>
+        <Text style={[typography.label, styles.topLabel, { color: colors.onHeroMuted, letterSpacing: isRTL ? 0 : 1 }]}>
           {t('home.today')} · {weekdayName(today.weekday, lang)}
         </Text>
         <Pressable
@@ -146,7 +142,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   watermark: { position: 'absolute', top: -30 },
-  topRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  topRow: { justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  topLabel: { flexShrink: 1 },
   methodChip: {
     alignItems: 'center',
     gap: 2,

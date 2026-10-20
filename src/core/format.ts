@@ -5,6 +5,9 @@ import type { Language } from '../i18n/language';
 
 const ARABIC_INDIC = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
+/** Non-breaking space: keeps "1448 AH" / "١٤٤٨ هـ" together when a long date wraps. */
+const NBSP = '\u00A0';
+
 /** Arabic UI shows Arabic-Indic digits (١٤٢٣), like prayer-times-lb does. */
 export function localizeDigits(value: string | number, lang: Language): string {
   const s = String(value);
@@ -14,13 +17,15 @@ export function localizeDigits(value: string | number, lang: Language): string {
 export function formatHijri(date: HijriDate, lang: Language): string {
   const month = hijriMonthName(date.month, lang);
   return lang === 'ar'
-    ? localizeDigits(`${date.day} ${month} ${date.year} هـ`, lang)
-    : `${date.day} ${month} ${date.year} AH`;
+    ? localizeDigits(`${date.day} ${month} ${date.year}${NBSP}هـ`, lang)
+    : `${date.day} ${month} ${date.year}${NBSP}AH`;
 }
 
 export function formatGregorian(date: GregorianDate, lang: Language): string {
   const month = gregorianMonthName(date.month, lang);
-  return lang === 'ar' ? localizeDigits(`${date.day} ${month} ${date.year} م`, lang) : `${date.day} ${month} ${date.year}`;
+  return lang === 'ar'
+    ? localizeDigits(`${date.day} ${month} ${date.year}${NBSP}م`, lang)
+    : `${date.day} ${month} ${date.year}`;
 }
 
 export function formatWeekday(date: GregorianDate, lang: Language): string {

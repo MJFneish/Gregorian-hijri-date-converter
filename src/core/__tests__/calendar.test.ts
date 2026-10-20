@@ -93,9 +93,10 @@ describe('Maghrib (eve hint)', () => {
 describe('formatting', () => {
   it('uses Arabic-Indic digits in Arabic', () => {
     expect(localizeDigits('1423', 'ar')).toBe('١٤٢٣');
-    expect(formatHijri({ year: 1423, month: 1, day: 8 }, 'ar')).toBe('٨ محرّم ١٤٢٣ هـ');
-    expect(formatHijri({ year: 1423, month: 1, day: 8 }, 'en')).toBe('8 Muharram 1423 AH');
+    // \u00A0 keeps the year and its era marker on one line when a long date wraps.
+    expect(formatHijri({ year: 1423, month: 1, day: 8 }, 'ar')).toBe('٨ محرّم ١٤٢٣\u00A0هـ');
+    expect(formatHijri({ year: 1423, month: 1, day: 8 }, 'en')).toBe('8 Muharram 1423\u00A0AH');
     expect(formatGregorian({ year: 2002, month: 3, day: 22 }, 'en')).toBe('22 March 2002');
-    expect(formatGregorian({ year: 2002, month: 3, day: 22 }, 'ar')).toBe('٢٢ آذار ٢٠٠٢ م');
+    expect(formatGregorian({ year: 2002, month: 3, day: 22 }, 'ar')).toBe('٢٢ آذار ٢٠٠٢\u00A0م');
   });
 });
