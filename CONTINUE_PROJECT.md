@@ -53,6 +53,7 @@ exact over 573 real months; Fadlallah rule → 5/5 known dates. Details in CLAUD
   (style warnings only).
 - **Android build**: `./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a` →
   **BUILD SUCCESSFUL** (3 m 18 s), `android/app/build/outputs/apk/release/app-release.apk`
+  (since 1.0.1 release APKs are named `HijriConverter-<version>.apk` — see help.md)
   (~31 MB, arm64 only, signed with the template debug key, JS bundle Hermes-compiled — installs
   and runs without Metro: `adb install -r …/app-release.apk`). The *first* attempt failed with
   Windows' 260-char path limit in the codegen C++ build; fixed by pinning CMake 3.31.6 (see

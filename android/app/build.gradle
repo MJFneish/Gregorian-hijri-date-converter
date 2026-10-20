@@ -117,6 +117,21 @@ android {
     }
 }
 
+// Release APKs are named "<AppName>-<versionName>.apk" (e.g. HijriConverter-1.0.1.apk) instead of
+// "app-release.apk", so every build is identifiable on its own. versionName is the one
+// `yarn bump` maintains, so the name follows each bump automatically. Debug keeps
+// "app-debug.apk": the RN CLI looks that file up by name in some `yarn android` install paths.
+// Uses the legacy variant API, available because gradle.properties keeps android.newDsl=false
+// (the RN 0.87 template default) — revisit if that flag is ever flipped.
+def releaseApkBaseName = "HijriConverter"
+android.applicationVariants.configureEach { variant ->
+    if (variant.buildType.name == "release") {
+        variant.outputs.configureEach { output ->
+            output.outputFileName = "${releaseApkBaseName}-${variant.versionName}.apk"
+        }
+    }
+}
+
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")

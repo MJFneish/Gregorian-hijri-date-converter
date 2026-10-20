@@ -27,6 +27,15 @@ npx react-native doctor           # diagnose toolchain/env issues
 
 ---
 
+## 📦 Release APK file name
+
+Release APKs are named **`HijriConverter-<version>.apk`** (e.g. `HijriConverter-1.0.1.apk`) in
+`android/app/build/outputs/apk/release/` — set in `android/app/build.gradle`
+(`releaseApkBaseName`), with the version taken from `versionName`, so each `yarn bump`
+changes it automatically. Debug builds keep `app-debug.apk` (the RN CLI expects that name).
+
+---
+
 ## 🔢 Version bumping
 
 Nothing auto-increments on local builds — bump before a store release
@@ -135,7 +144,8 @@ adb reverse tcp:8081 tcp:8081                          # phone over USB → Metr
 # 2b. Standalone release APK (no Metro needed)
 cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a && cd ..   # phone ABI (fast)
 cd android && ./gradlew assembleRelease && cd ..       # all ABIs (also runs on x86_64 emulators)
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 && cd ..   # phone + emulator
+adb install -r android/app/build/outputs/apk/release/HijriConverter-1.0.1.apk   # use the current version
 adb shell am start -n com.devlance.hijriconverter/.MainActivity
 
 # Only build, no device needed
