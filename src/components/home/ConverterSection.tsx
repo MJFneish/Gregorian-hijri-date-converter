@@ -6,17 +6,21 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { ArrowDown, ArrowLeftRight, CalendarCheck2, Copy, Info, Moon, Share2, Sun } from 'lucide-react-native';
 
 import { gregorianToJdn, jdnToGregorian, todayJdn } from '../../core/calendar';
-import { formatGregorian, formatHijri } from '../../core/format';
+import { formatDecimal, formatGregorian, formatHijri, formatPercent } from '../../core/format';
 import { hijriOfJdn, jdnOfHijri, weekdayName } from '../../core/hijri';
+import { illuminationPercent, moonPhaseOnDay } from '../../core/moon';
 import { dayInfo } from '../../core/today';
 import { useConversionOptions } from '../../hooks/useConversionOptions';
 import { useDirection } from '../../hooks/useDirection';
+import { brand } from '../../theme/colors';
 import { useTheme } from '../../theme/useTheme';
 import { radius, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { OccasionBadge, SourceBadge } from '../badges';
+import { MOON_SIZE, MoonDisc, moonGlowMargin } from '../moon/MoonDisc';
 import { DateWheels, type Ymd } from '../picker/DateWheels';
 import { Card } from '../ui/Card';
+import { GradientFill } from '../ui/GradientFill';
 import { PressableScale } from '../ui/PressableScale';
 import { SectionLabel } from '../ui/SectionLabel';
 import { SegmentedControl } from '../ui/SegmentedControl';
@@ -38,6 +42,16 @@ interface Conversion {
  * scroll to the result finish first. */
 const MIN_CONVERTING_MS = 550;
 
+const MOON_GLOW = moonGlowMargin(MOON_SIZE);
+/** Faint stars on the result's night panel, kept off the moon's side of the moon row. */
+const SKY_STARS = [
+  [0.9, 0.08, 1.2, 0.6],
+  [0.72, 0.16, 0.9, 0.4],
+  [0.95, 0.34, 1, 0.45],
+  [0.56, 0.05, 0.8, 0.35],
+  [0.86, 0.62, 0.9, 0.4],
+] as const;
+
 /**
  * The converter. The wheels edit a *draft* (a JDN — one day on the shared timeline — plus the
  * direction); nothing is converted while they turn (user request: convert on demand, not on every
@@ -51,7 +65,7 @@ const MIN_CONVERTING_MS = 550;
 export function ConverterSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { rowDirection, textAlign, lang } = useDirection();
+  const { rowDirection, textAlign, lang, isRTL } = useDirection();
   const opts = useConversionOptions();
   const { scrollToView } = useHomeScroll();
 
@@ -96,6 +110,12 @@ export function ConverterSection() {
   const resultText = outputIsGregorian ? gregorianText : hijriText;
   const inputText = outputIsGregorian ? hijriText : gregorianText;
   const sentence = `${weekday}${lang === 'ar' ? '، ' : ', '}${inputText} = ${resultText}`;
+
+  // The real Moon that evening — depends on the day only, not on the method/adjustment.
+  const moon = useMemo(() => moonPhaseOnDay(applied.jdn), [applied.jdn]);
+  const moonName = t(`moon.phase.${moon.name}`);
+  const moonIllumination = t('moon.illumination', { percent: formatPercent(illuminationPercent(moon), lang) });
+  const moonAge = t('moon.age', { days: formatDecimal(moon.age, lang) });
 
   const copy = () => {
     Clipboard.setString(sentence);
@@ -185,20 +205,44 @@ export function ConverterSection() {
                   </Text>
                 </View>
               )}
-              <Text style={[typography.label, { color: colors.textMuted, textAlign }]}>
-                {outputIsGregorian ? t('home.resultGregorian') : t('home.resultHijri')}
-              </Text>
-              <Text
-                style={[typography.displayMedium, { color: colors.text, textAlign, marginTop: spacing.xs }]}
-                accessibilityLiveRegion="polite"
-                selectable
-              >
-                {resultText}
-              </Text>
-              <Text style={[typography.body, { color: colors.textMuted, textAlign, marginBottom: spacing.md }]}>
-                {weekday} · {inputText}
-              </Text>
-              <SourceBadge source={info.source} />
+              {/* Night panel: the date, large, over the Moon as it looks that evening. Always dark
+                  (both themes) — the moon only reads as real against a night sky. */}
+              <View style={[styles.sky, { backgroundColor: brand.night }]}>
+                <GradientFill id="resultSky" from={brand.night} to={colors.heroFrom} stars={SKY_STARS} />
+                <Text style={[typography.label, { color: colors.onHeroMuted, textAlign, letterSpacing: isRTL ? 0 : 1 }]}>
+                  {outputIsGregorian ? t('home.resultGregorian') : t('home.resultHijri')}
+                </Text>
+                <Text
+                  style={[typography.displayLarge, { color: colors.onHero, textAlign, marginTop: spacing.xs }]}
+                  accessibilityLiveRegion="polite"
+                  selectable
+                >
+                  {resultText}
+                </Text>
+                <Text style={[typography.body, { color: colors.onHeroMuted, textAlign }]}>
+                  {weekday} · {inputText}
+                </Text>
+                <View style={styles.skyDivider} />
+                <View
+                  style={[styles.moonRow, { flexDirection: rowDirection }]}
+                  accessible
+                  accessibilityLabel={`${moonName}, ${moonIllumination}, ${moonAge}`}
+                >
+                  {/* Negative margin: the glow spills into the padding; the disc itself lines up
+                      with the text above and sets the row's height. */}
+                  <View style={styles.moonGlowBox}>
+                    <MoonDisc phase={moon} size={MOON_SIZE} />
+                  </View>
+                  <View style={styles.moonText}>
+                    <Text style={[typography.subtitle, { color: colors.heroGold, textAlign }]}>{moonName}</Text>
+                    <Text style={[typography.body, { color: colors.onHero, textAlign }]}>{moonIllumination}</Text>
+                    <Text style={[typography.caption, { color: colors.onHeroMuted, textAlign }]}>{moonAge}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.source}>
+                <SourceBadge source={info.source} />
+              </View>
               {info.occasions.length > 0 && (
                 <View style={styles.occasions}>
                   {info.occasions.map(o => (
@@ -265,6 +309,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   staleText: { flex: 1 },
+  sky: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    overflow: 'hidden',
+  },
+  skyDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    marginVertical: spacing.md,
+  },
+  moonRow: { alignItems: 'center', gap: spacing.lg },
+  moonGlowBox: { margin: -MOON_GLOW },
+  moonText: { flex: 1, gap: 2 },
+  source: { marginTop: spacing.md },
   occasions: { marginTop: spacing.md, gap: spacing.sm },
   actions: { gap: spacing.md, marginTop: spacing.lg },
   actionBox: { flex: 1 },

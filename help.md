@@ -72,6 +72,7 @@ Updating Iran's official data (newer months) or recording a new announcement: se
 
 ```bash
 node scripts/generate-icons.js     # launcher icons (Android legacy/adaptive/monochrome + iOS 1024) + assets/brand/*.svg
+node scripts/generate-moon.js      # moon-phase texture assets/moon/moon{,@2x,@3x}.png from NASA's LRO map (scripts/data/)
 
 # native splash, from the emblem the script above writes
 yarn react-native-bootsplash generate assets/brand/splash-logo.svg \

@@ -32,6 +32,17 @@ export function formatWeekday(date: GregorianDate, lang: Language): string {
   return weekdayName(weekdayOfJdn(gregorianToJdn(date)), lang);
 }
 
+/** "62%" / "٦٢٪". */
+export function formatPercent(percent: number, lang: Language): string {
+  return lang === 'ar' ? `${localizeDigits(percent, lang)}٪` : `${percent}%`;
+}
+
+/** One decimal place: "7.4" / "٧٫٤". */
+export function formatDecimal(value: number, lang: Language): string {
+  const s = value.toFixed(1);
+  return lang === 'ar' ? localizeDigits(s.replace('.', '٫'), lang) : s;
+}
+
 /** Local wall-clock time, 24h "18:42" (Arabic digits in Arabic). */
 export function formatTime(instant: Date, lang: Language): string {
   const hh = String(instant.getHours()).padStart(2, '0');

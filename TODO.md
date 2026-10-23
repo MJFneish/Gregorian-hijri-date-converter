@@ -55,7 +55,19 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
 - [ ] Physical phone run (release APK) + copy/share sheet on a real device
 - [ ] iOS build (needs macOS — not possible from this Windows machine; `pod install` never run)
 
+## Phase 6 — Moon phase on the converter result (user request, 2026-10-23)
+- [x] `src/core/moon.ts`: the real Moon on the evening (Beirut Maghrib) of any day — elongation,
+      illumination, waxing/waning, age, phase name (Meeus eq. 48.4 + extra ch. 47 terms, runtime)
+- [x] Realistic disc (`MoonDisc`): NASA LRO full-moon texture (`scripts/generate-moon.js`) with the
+      night side shaded at the exact phase + soft terminator + earthshine; continuous, not 8 icons
+- [x] Result card: night panel with the date larger (28 → 34) and the moon row (phase, % lit, age);
+      skeleton reshaped to match; EN/AR strings; NASA credit in Settings → About
+- [x] `moon.test.ts` written (vs astronomy-engine, eclipses, a distinct moon every day of 132 Hijri months)
+- [ ] Run `yarn test` / `yarn typecheck` / `yarn lint` (not run — waiting for the user's go-ahead)
+- [ ] Look at it on the emulator (light + dark, EN + AR, a crescent, a quarter, a full moon)
+
 ## Ideas / not built (ask the user before building)
+- Today's moon on the Today card too (MoonDisc is reusable; the crescent watermark could become it)
 - Month calendar grid (Hijri month view with both dates per day, occasions highlighted)
 - Home-screen widget (today's Hijri date + eve state), like prayer-times-lb's
 - GPS-based Maghrib for the eve hint (currently Beirut, no permission)

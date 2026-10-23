@@ -77,6 +77,20 @@
     "convertHint": "Converts the picked date and scrolls to the result",
     "staleResult": "The date above changed — showing the previous result. Press Convert to update."
   },
+  "moon": {
+    "phase": {
+      "new": "New Moon",
+      "waxingCrescent": "Waxing Crescent",
+      "firstQuarter": "First Quarter",
+      "waxingGibbous": "Waxing Gibbous",
+      "full": "Full Moon",
+      "waningGibbous": "Waning Gibbous",
+      "lastQuarter": "Last Quarter",
+      "waningCrescent": "Waning Crescent"
+    },
+    "illumination": "{{percent}} illuminated",
+    "age": "Moon age: {{days}} days"
+  },
   "between": {
     "title": "Days between",
     "calendar": "Calendar for the dates",
@@ -111,7 +125,7 @@
     "about": "About",
     "version": "Version {{version}}",
     "aboutBody": "Converts dates between the Gregorian and Hijri calendars following Shia calendar authorities, fully offline. Iran's official dates come from the published record; the other methods compute crescent visibility astronomically (Odeh's criterion).",
-    "credits": "Iranian month data: the qamari project (CC0). Astronomy: astronomy-engine (MIT).",
+    "credits": "Iranian month data: the qamari project (CC0). Astronomy: astronomy-engine (MIT). Moon imagery: NASA's Scientific Visualization Studio (LRO).",
     "disclaimer": "Calculated dates can differ by a day from what your marja's office announces, especially for future months. Follow the official announcement for religious obligations."
   },
   "onboarding": {

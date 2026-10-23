@@ -106,6 +106,32 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   ([`src/core/maghrib.ts`](./src/core/maghrib.ts)). Test asserts Al Sirat's published Beirut
   Maghrib (2026-07-12 20:11) within a minute.
 
+### Moon phase (converter result)
+
+- User request (2026-10-23): show the Moon for each converted day, **realistic like a weather
+  app, a different shape every day, not 8 icons**. [`src/core/moon.ts`](./src/core/moon.ts)
+  computes it **on the phone** (unlike the month tables): Meeus eq. 48.4 plus the next ch. 47
+  longitude terms → elongation within ~0.1–0.3° of astronomy-engine, illuminated fraction, waxing,
+  age (Newton steps back to the conjunction) and a name. Principal names (new / first quarter /
+  full / last quarter) go only on the day whose sample is within ±12 h of the exact instant.
+  `illuminationPercent` keeps "100%" / "0%" for full / new days only.
+- Sampled at **Beirut's Maghrib** of the civil day (`moonPhaseOnDay`), the app's existing start of
+  the Islamic night — so day 1 of a month shows a young crescent and the 14th/15th the full moon.
+  It depends on the Gregorian day only; method and ±adjustment don't move the Moon.
+- Drawing ([`MoonDisc.tsx`](./src/components/moon/MoonDisc.tsx)): an RN `Image` of a real
+  full-moon texture, with an SVG overlay of 11 stacked translucent night-side shadows (terminator
+  = half-ellipse with semi-axis r·|cos ψ|, each layer's terminator shifted a few degrees) for the
+  soft terminator, and a dim night side that still shows the maria, like earthshine. The shadows overhang the limb by
+  0.35 dp so the texture's anti-aliased edge doesn't show a bright rim (more overhang draws a dark
+  ring). North up, waxing lit on the right. `fadeDuration={0}`, or Android fades the photo in under the shadows.
+- Texture: [`scripts/generate-moon.js`](./scripts/generate-moon.js) projects NASA's LRO colour
+  mosaic (`scripts/data/lroc_color_2k.jpg`, CGI Moon Kit, public domain — credit "NASA's
+  Scientific Visualization Studio", shown in Settings → About) onto the near side →
+  `assets/moon/moon{,@2x,@3x}.png` (96/192/288 px = `MOON_SIZE` 96 dp). Pure asset step, no phase baked in.
+- The result card's date sits in an always-dark night panel (the moon only looks real on a
+  night sky) at `displayLarge` (was `displayMedium`), with the moon row under it; `ResultSkeleton`
+  mirrors that shape.
+
 ## UI architecture
 
 - **Tabs pager** ([`MainTabs.tsx`](./src/navigation/MainTabs.tsx)): ported from prayer-times-lb —
@@ -233,6 +259,7 @@ yarn lint               # eslint
 yarn bump [patch|minor|major] [--dry-run]   # version bump (package.json + build.gradle + pbxproj)
 node scripts/build-hijri-tables.js [--calibrate]   # regenerate / re-check the month tables
 node scripts/generate-icons.js                     # regenerate launcher icons
+node scripts/generate-moon.js                      # regenerate the moon-phase texture (assets/moon/)
 ```
 
 ## Conventions to keep following
