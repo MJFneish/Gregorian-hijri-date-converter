@@ -92,8 +92,8 @@ android {
         applicationId "com.devlance.hijriconverter"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
-        versionName "1.8.0"
+        versionCode 12
+        versionName "1.9.0"
     }
     signingConfigs {
         debug {
