@@ -5,6 +5,7 @@ import MainTabs from './MainTabs';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import BirthdayScreen from '../screens/tools/BirthdayScreen';
 import CompareOfficesScreen from '../screens/tools/CompareOfficesScreen';
+import CrescentScreen from '../screens/tools/CrescentScreen';
 import DaysBetweenScreen from '../screens/tools/DaysBetweenScreen';
 import FastingScreen from '../screens/tools/FastingScreen';
 import OccasionsScreen from '../screens/tools/OccasionsScreen';
@@ -35,6 +36,7 @@ export function RootNavigator() {
       <Stack.Screen name="Occasions" component={OccasionsScreen} options={toolPage} />
       <Stack.Screen name="Birthday" component={BirthdayScreen} options={toolPage} />
       <Stack.Screen name="Fasting" component={FastingScreen} options={toolPage} />
+      <Stack.Screen name="Crescent" component={CrescentScreen} options={toolPage} />
       <Stack.Screen name="DaysBetween" component={DaysBetweenScreen} options={toolPage} />
     </Stack.Navigator>
   );

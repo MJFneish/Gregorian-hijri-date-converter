@@ -30,6 +30,10 @@
       "title": "Fasting days",
       "description": "Recommended (mustahab) fasts in the coming months."
     },
+    "crescent": {
+      "title": "Crescent forecast",
+      "description": "Can the new crescent be seen? The evenings around the next month start."
+    },
     "daysBetween": {
       "title": "Days between",
       "description": "Count the days, months and years between two dates."
@@ -192,6 +196,49 @@
       "conditions": "A recommended fast isn't valid while you still owe Ramadan make-up days, or while travelling; don't fast if it would harm you.",
       "sources": "From the practical treatises of Sayyed Sistani, Sayyed Khamenei and Sayyed Fadlallah. Days tagged “Sistani's list” appear in Sayyed Sistani's list only. Ask your marja's office about your own case."
     }
+  },
+  "crescent": {
+    "startOf": "Start of {{month}}",
+    "endOf": "End of {{month}}",
+    "previous": "Previous month",
+    "next": "Next month",
+    "calculating": "Calculating…",
+    "conjunction": "New moon (conjunction)",
+    "conjunctionAt": "{{date}} at {{time}} (your time)",
+    "evening": "Evening of {{day}} {{month}} · {{date}}",
+    "place": {
+      "beirut": "Beirut",
+      "najaf": "Najaf",
+      "iran": "Iran — best of 6 cities ({{city}})"
+    },
+    "hint": {
+      "beirut": "Sayyed Fadlallah's office also counts sightings further west that share the night.",
+      "najaf": "Sayyed Sistani's office: a naked-eye sighting on the same horizon.",
+      "iran": "Iran's committee also accepts sightings with telescopes."
+    },
+    "city": {
+      "tehran": "Tehran",
+      "mashhad": "Mashhad",
+      "ahvaz": "Ahvaz",
+      "bushehr": "Bushehr",
+      "zahedan": "Zahedan",
+      "bandarAbbas": "Bandar Abbas"
+    },
+    "visibility": {
+      "nakedEye": "Visible to the naked eye",
+      "opticalMaybeEye": "Visible with optical aid; may be seen by eye",
+      "opticalOnly": "Only with optical aid",
+      "none": "Not visible",
+      "notBorn": "Before the new moon — no crescent yet",
+      "setsFirst": "The moon sets before the sun"
+    },
+    "hours": "{{n}} h",
+    "minutes": "{{n}} min",
+    "age": "Moon age {{age}}",
+    "ageSetsFirst": "Moon age {{age}} · sets before the sun",
+    "ageLag": "Moon age {{age}} · sets {{lag}} after the sun",
+    "expected": "Expected 1st of {{month}}",
+    "how": "Visibility uses Odeh's criterion — the one this app's calendars are calculated with: how high and how wide the crescent is at the best moment after sunset. Each office decides by actual sightings and its own rules, so this is a forecast, not an announcement."
   },
   "between": {
     "title": "Days between",

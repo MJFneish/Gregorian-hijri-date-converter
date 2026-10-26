@@ -2490,7 +2490,7 @@ astral-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-1.0.0.tgz#6c8c3fb827dd43ee3918f27b82782ab7658a6fd9"
   integrity sha512-+Ryf6g3BKoRc7jfp7ad8tM4TtMiaWvbF/1/sQcZPkkS7ag3D5nMBCe2UfOTONtAkaG0tO0ij3C5Lwmf1EiyjHg==
 
-astronomy-engine@^2.1.19:
+astronomy-engine@2.1.19:
   version "2.1.19"
   resolved "https://registry.yarnpkg.com/astronomy-engine/-/astronomy-engine-2.1.19.tgz#41b9fd2afb7eba3485e3803cbd9033011f8557af"
   integrity sha512-8yWKNf7UeNbH458h3sAJ6ZgAjE5jTXp/mNNRFoC20j2SHwZIjAQeEsBB2Q3uCFRaTCCJRv33K2XhkhZQMXoX6w==

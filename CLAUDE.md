@@ -64,11 +64,13 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
 
 ### How it's built
 
-- **Everything is precomputed at build time** by [`scripts/build-hijri-tables.js`](./scripts/build-hijri-tables.js)
-  (Node + `astronomy-engine`, a devDependency only) into
+- **The month tables are precomputed at build time** by [`scripts/build-hijri-tables.js`](./scripts/build-hijri-tables.js)
+  (Node + `astronomy-engine`) into
   [`src/core/hijri/tables.generated.ts`](./src/core/hijri/tables.generated.ts): per method, the
   JDN of 1 Muharram 1343 + one 12-bit mask per Hijri year (bit = 30-day month), 1343–1500 AH
-  (1924–2077). ~3 KB total. The phone never runs astronomy code.
+  (1924–2077). ~3 KB total. Conversions never run astronomy on the phone. (Since v1.9.0
+  `astronomy-engine` 2.1.19 is also a runtime dependency, for the crescent forecast only — pure
+  JS, no native code.)
 - Crescent rule (all computed methods): from a month's day 1 at civil date S, evaluate the evening
   of day 29 (civil S+28) — visible → next month starts S+29, else the month completes 30 days.
   Self-correcting (an anchor error fades within a month or two).
@@ -181,6 +183,15 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   and 10 Dhu al-Hijjah (forbidden), Ashura (discouraged — shown as "abstain in mourning until after
   Asr, not a fast"). Left out as single-source/too broad: Nowruz, 29 Dhu al-Qi'dah, 15 Jumada
   al-Ula, every Thursday/Friday. Default window: this month + 2; "Show the whole year" → 12.
+- **Crescent forecast** ([`CrescentScreen`](./src/screens/tools/CrescentScreen.tsx),
+  [`core/crescent.ts`](./src/core/crescent.ts)): the build script's Odeh rule ported to TS and run
+  on the phone with astronomy-engine — **keep the two in sync**; `crescent.test.ts` asserts the
+  port reproduces the Sistani table (Najaf, V ≥ 5.65) and every predicted Iran month (best of the
+  6 cities, V ≥ 2) for 1440–1450 exactly. Shows, per month start (stepper, 0–11 ahead): the
+  conjunction time (device time), the 29th and 30th evenings (in the user's calendar) for Beirut
+  (Fadlallah's reference), Najaf (Sistani) and Iran (best city), with Odeh zone, moon age and lag,
+  and each office's expected 1st (raw tables). Computed in a `setTimeout` after the frame (a few
+  hundred ms of astronomy) with a "Calculating…" state.
 - **RN Android keeps a stale "busy" in the content description** of a view with no
   `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
   updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,

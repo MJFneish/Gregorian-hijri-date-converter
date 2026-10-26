@@ -9,4 +9,5 @@ export type RootStackParamList = {
   Occasions: undefined;
   Birthday: undefined;
   Fasting: undefined;
+  Crescent: undefined;
 };
