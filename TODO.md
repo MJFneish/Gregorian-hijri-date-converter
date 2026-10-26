@@ -93,7 +93,7 @@ commit + push → GitHub release; one APK build at the very end.
 - [x] v1.4.0 — Tonight's moon on the Today card
 - [x] v1.5.0 — Compare offices (one date under every method)
 - [x] v1.6.0 — Occasions list with countdowns, each shareable as an image
-- [ ] v1.7.0 — Hijri birthday (next Hijri birthday + age in Hijri years)
+- [x] v1.7.0 — Hijri birthday (next Hijri birthday + age in Hijri years)
 - [ ] v1.8.0 — Recommended fasting days (list only — no notifications, user's choice)
 - [ ] v1.9.0 — Crescent forecast (visibility around the next month start)
 - [ ] v1.10.0 — Month-start updates without a new APK (JSON in the GitHub repo)

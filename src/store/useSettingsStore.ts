@@ -16,6 +16,8 @@ interface SettingsState {
   /** Manual Hijri shift in days, −MAX_ADJUSTMENT…+MAX_ADJUSTMENT. */
   adjustment: number;
   onboardingDone: boolean;
+  /** Tools → Hijri birthday: the user's birth date as a JDN (stored on the phone only), or null. */
+  birthJdn: number | null;
   /** Not persisted — flips true once AsyncStorage has been read, gating the first render. */
   hasHydrated: boolean;
   setLanguage: (language: Language) => void;
@@ -23,6 +25,7 @@ interface SettingsState {
   setMethod: (method: MethodId) => void;
   setAdjustment: (adjustment: number) => void;
   completeOnboarding: () => void;
+  setBirthJdn: (jdn: number | null) => void;
   setHasHydrated: (value: boolean) => void;
 }
 
@@ -37,6 +40,7 @@ export const useSettingsStore = create<SettingsState>()(
       method: DEFAULT_METHOD,
       adjustment: 0,
       onboardingDone: false,
+      birthJdn: null,
       hasHydrated: false,
       setLanguage: language => {
         i18n.changeLanguage(language);
@@ -46,17 +50,19 @@ export const useSettingsStore = create<SettingsState>()(
       setMethod: method => set({ method }),
       setAdjustment: adjustment => set({ adjustment: clampAdjustment(adjustment) }),
       completeOnboarding: () => set({ onboardingDone: true }),
+      setBirthJdn: birthJdn => set({ birthJdn }),
       setHasHydrated: value => set({ hasHydrated: value }),
     }),
     {
       name: 'hijri-converter-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ language, themeMode, method, adjustment, onboardingDone }) => ({
+      partialize: ({ language, themeMode, method, adjustment, onboardingDone, birthJdn }) => ({
         language,
         themeMode,
         method,
         adjustment,
         onboardingDone,
+        birthJdn,
       }),
       // Guards against a stored value from a future/older build that this one doesn't know.
       merge: (persisted, current) => {
@@ -66,6 +72,7 @@ export const useSettingsStore = create<SettingsState>()(
           ...p,
           method: isMethodId(p.method) ? p.method : current.method,
           adjustment: clampAdjustment(typeof p.adjustment === 'number' ? p.adjustment : current.adjustment),
+          birthJdn: Number.isInteger(p.birthJdn) ? (p.birthJdn as number) : null,
         };
       },
       onRehydrateStorage: () => state => {

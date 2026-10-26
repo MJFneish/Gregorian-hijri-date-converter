@@ -7,4 +7,5 @@ export type RootStackParamList = {
   /** `jdn` = the day to compare (from the converter's result); defaults to today. */
   CompareOffices: { jdn?: number } | undefined;
   Occasions: undefined;
+  Birthday: undefined;
 };

@@ -22,6 +22,10 @@
       "title": "Occasions",
       "description": "Every Shia occasion in the coming year, with a countdown."
     },
+    "birthday": {
+      "title": "Hijri birthday",
+      "description": "Your next Hijri birthday and your age in Hijri years."
+    },
     "daysBetween": {
       "title": "Days between",
       "description": "Count the days, months and years between two dates."
@@ -134,6 +138,25 @@
     "tomorrow": "Tomorrow",
     "inDays": "In {{days}}",
     "share": "Share {{name}}"
+  },
+  "birthday": {
+    "enterIn": "I know my birth date in",
+    "birthDate": "Birth date",
+    "notSet": "Tap to pick your birth date",
+    "private": "Saved on this phone only.",
+    "future": "That date is in the future — pick your birth date.",
+    "nextTitle": "Next Hijri birthday",
+    "today": "Today!",
+    "tomorrow": "Tomorrow",
+    "inDays": "In {{days}}",
+    "turning": "You turn {{age}} in Hijri years",
+    "clamped": "{{month}} has 29 days that year, so it falls on the 29th.",
+    "bornTitle": "You were born on",
+    "ageTitle": "Your age",
+    "hijriAge": "In Hijri years",
+    "gregorianAge": "In Gregorian years",
+    "why": "A Hijri year is about 11 days shorter than a Gregorian one, so your Hijri age runs ahead and your Hijri birthday comes about 11 days earlier each year.",
+    "forget": "Forget my birth date"
   },
   "between": {
     "title": "Days between",

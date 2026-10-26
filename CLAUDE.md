@@ -161,6 +161,12 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   in `core/today.ts`): every occasion from today to the same Hijri date next year (so each appears
   exactly once), grouped by Hijri month, All / Mourning / Celebrations filter, countdown chip, and a
   share button per row — the same ShareCard with `highlight={occasion}` leading the card.
+- **Hijri birthday** ([`BirthdayScreen`](./src/screens/tools/BirthdayScreen.tsx),
+  [`core/birthday.ts`](./src/core/birthday.ts)): birth date entered in either calendar, stored as
+  a JDN in the settings store (`birthJdn`, phone only, "Forget" clears it); shows the Hijri birth
+  date, the next Hijri birthday (countdown, Gregorian date, age reached; a 30th in a 29-day month
+  falls on the 29th — `clamped`) and the age in Hijri vs Gregorian years (`spanPhrase` in
+  `i18n/plural.ts`).
 - **RN Android keeps a stale "busy" in the content description** of a view with no
   `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
   updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,

@@ -53,3 +53,13 @@ export function joinParts(parts: string[], lang: Language): string {
   if (lang === 'ar') return parts.join(' و');
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
+
+/** "25 years, 7 months and 3 days" / "٢٥ سنة و٧ أشهر و٣ أيام"; zero parts are left out. */
+export function spanPhrase(span: { years: number; months: number; days: number }, lang: Language): string {
+  const parts = [
+    span.years > 0 ? countPhrase('year', span.years, lang) : null,
+    span.months > 0 ? countPhrase('month', span.months, lang) : null,
+    span.days > 0 ? countPhrase('day', span.days, lang) : null,
+  ].filter((p): p is string => p !== null);
+  return parts.length > 0 ? joinParts(parts, lang) : countPhrase('day', 0, lang);
+}
