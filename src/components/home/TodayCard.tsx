@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Svg, { Path } from 'react-native-svg';
-import { CalendarClock, ChevronLeft, ChevronRight, MoonStar, Sunset } from 'lucide-react-native';
+import { CalendarClock, ChevronLeft, ChevronRight, Moon, MoonStar, Sunset } from 'lucide-react-native';
 
-import { formatGregorian, formatHijri, formatTime } from '../../core/format';
+import { formatGregorian, formatHijri, formatPercent, formatTime } from '../../core/format';
 import { weekdayName } from '../../core/hijri';
+import { illuminationPercent, moonPhaseOnDay } from '../../core/moon';
 import { todaySummary } from '../../core/today';
-import { CRESCENT_PATH } from '../brand/AppLogo';
+import { MoonDisc, moonGlowMargin } from '../moon/MoonDisc';
 import { useConversionOptions } from '../../hooks/useConversionOptions';
 import { useDirection } from '../../hooks/useDirection';
 import { useNow } from '../../hooks/useNow';
@@ -26,15 +26,20 @@ const HERO_STARS = [
   [0.92, 0.6, 1.2, 0.5],
 ] as const;
 
+/** Tonight's moon, beside the Gregorian date (the big Hijri date keeps the full width). */
+const TODAY_MOON = 64;
+const TODAY_MOON_GLOW = moonGlowMargin(TODAY_MOON);
+
 interface Props {
   /** Opens Settings (the method chip). */
   onPressMethod: () => void;
 }
 
 /**
- * Hero card: today in both calendars, today's occasion, the Maghrib "eve" hint (the user chose
- * midnight as the day change, with an "eve of …" note after Maghrib — see core/maghrib.ts), and
- * the next upcoming occasion.
+ * Hero card: today in both calendars, tonight's real moon (same disc as the converter result —
+ * it replaced a decorative crescent watermark), today's occasion, the Maghrib "eve" hint (the
+ * user chose midnight as the day change, with an "eve of …" note after Maghrib — see
+ * core/maghrib.ts), and the next upcoming occasion.
  */
 export function TodayCard({ onPressMethod }: Props) {
   const { t } = useTranslation();
@@ -44,21 +49,12 @@ export function TodayCard({ onPressMethod }: Props) {
   const now = useNow();
   const summary = useMemo(() => todaySummary(now, opts), [now, opts]);
   const { today, eve, maghrib, next } = summary;
+  const moon = useMemo(() => moonPhaseOnDay(today.jdn), [today.jdn]);
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.heroFrom }, elevation(colors.cardShadow, 2)]}>
       <GradientFill id="todayHero" from={colors.heroFrom} to={colors.heroTo} stars={HERO_STARS} />
-      {/* Crescent watermark in the trailing corner. */}
-      <Svg
-        pointerEvents="none"
-        width={170}
-        height={170}
-        viewBox="0 0 100 100"
-        style={[styles.watermark, isRTL ? { left: -36 } : { right: -36 }]}
-      >
-        <Path d={CRESCENT_PATH} fill={colors.heroGold} opacity={0.16} />
-      </Svg>
 
       <View style={[styles.topRow, { flexDirection: rowDirection }]}>
         <Text style={[typography.label, styles.topLabel, { color: colors.onHeroMuted, letterSpacing: isRTL ? 0 : 1 }]}>
@@ -79,10 +75,18 @@ export function TodayCard({ onPressMethod }: Props) {
       <Text style={[typography.displayLarge, styles.hijri, { color: colors.onHero, textAlign }]} accessibilityRole="header">
         {formatHijri(today.hijri, lang)}
       </Text>
-      <Text style={[typography.subtitle, { color: colors.onHeroMuted, textAlign, marginBottom: spacing.md }]}>
-        {formatGregorian(today.gregorian, lang)}
-      </Text>
-      <SourceBadge source={today.source} onDark />
+      <View style={[styles.dateRow, { flexDirection: rowDirection }]}>
+        <View style={styles.dateText}>
+          <Text style={[typography.subtitle, { color: colors.onHeroMuted, textAlign, marginBottom: spacing.md }]}>
+            {formatGregorian(today.gregorian, lang)}
+          </Text>
+          <SourceBadge source={today.source} onDark />
+        </View>
+        {/* Negative margin: the glow spills over; the disc lines up with the card's padding. */}
+        <View style={styles.moonGlowBox}>
+          <MoonDisc phase={moon} size={TODAY_MOON} id="todayMoonGlow" />
+        </View>
+      </View>
 
       {today.occasions.length > 0 && (
         <View style={styles.occasions}>
@@ -92,7 +96,17 @@ export function TodayCard({ onPressMethod }: Props) {
         </View>
       )}
 
-      <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.16)' }]} />
+      <View style={styles.divider} />
+
+      <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
+        <Moon size={18} color={colors.heroGold} />
+        <Text style={[typography.caption, styles.infoText, { color: colors.onHeroMuted, textAlign }]}>
+          {t('home.tonightMoon', {
+            phase: t(`moon.phase.${moon.name}`),
+            percent: formatPercent(illuminationPercent(moon), lang),
+          })}
+        </Text>
+      </View>
 
       {eve ? (
         <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
@@ -141,7 +155,6 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     overflow: 'hidden',
   },
-  watermark: { position: 'absolute', top: -30 },
   topRow: { justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   topLabel: { flexShrink: 1 },
   methodChip: {
@@ -154,8 +167,11 @@ const styles = StyleSheet.create({
     minHeight: 32,
   },
   hijri: { marginBottom: 2 },
+  dateRow: { alignItems: 'center', gap: spacing.md },
+  dateText: { flex: 1 },
+  moonGlowBox: { margin: -TODAY_MOON_GLOW },
   occasions: { marginTop: spacing.md, gap: spacing.sm },
-  divider: { height: StyleSheet.hairlineWidth, marginVertical: spacing.lg },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: spacing.lg, backgroundColor: 'rgba(255,255,255,0.16)' },
   infoRow: { alignItems: 'flex-start', gap: spacing.sm, marginTop: spacing.xs },
   infoText: { flex: 1, gap: 2 },
 });

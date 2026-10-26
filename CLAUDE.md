@@ -132,6 +132,8 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   night sky) at `displayLarge` (was `displayMedium`), with the moon row under it —
   [`ResultPanel`](./src/components/home/ResultPanel.tsx), shared with the share image;
   `ResultSkeleton` mirrors that shape.
+- The Today card shows **tonight's moon** too (64 dp `MoonDisc` beside the Gregorian date + a
+  "Tonight's moon: …" info row); it replaced the old decorative crescent watermark (v1.4.0).
 
 ### Share = an image of the result (user request, 2026-10-23)
 

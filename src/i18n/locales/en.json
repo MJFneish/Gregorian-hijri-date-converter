@@ -66,6 +66,7 @@
     "eveOf": "Tonight is the eve of {{date}}",
     "eveHint": "The Islamic night began at Maghrib; the date changes at midnight.",
     "maghribAt": "Maghrib in Beirut at {{time}} — the night of the next Hijri day begins then",
+    "tonightMoon": "Tonight's moon: {{phase}}, {{percent}} illuminated",
     "nextOccasion": "Next: {{name}} — {{when}}",
     "tomorrow": "tomorrow",
     "inDays": "in {{days}}",
