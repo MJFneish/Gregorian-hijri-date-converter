@@ -8,4 +8,5 @@ export type RootStackParamList = {
   CompareOffices: { jdn?: number } | undefined;
   Occasions: undefined;
   Birthday: undefined;
+  Fasting: undefined;
 };

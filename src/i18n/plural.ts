@@ -17,6 +17,9 @@ const AR: Record<Unit, ArabicForms> = {
   day: { one: 'يوم واحد', two: 'يومان', few: '{n} أيام', many: '{n} يومًا', other: '{n} يوم' },
 };
 
+/** The dual after a preposition (بعد يومين، إلى يومين، بـيومين) — genitive, not the nominative يومان. */
+const AR_DUAL_GENITIVE: Record<Unit, string> = { year: 'سنتين', month: 'شهرين', week: 'أسبوعين', day: 'يومين' };
+
 const EN: Record<Unit, [string, string]> = {
   year: ['year', 'years'],
   month: ['month', 'months'],
@@ -39,9 +42,14 @@ function arabicForm(n: number): keyof ArabicForms {
   return 'other';
 }
 
-export function countPhrase(unit: Unit, n: number, lang: Language): string {
+/**
+ * "3 days" / "٣ أيام". Pass `afterPreposition` when the phrase follows بعد / إلى / بـ in the
+ * template ("بعد {{days}}"): Arabic then needs the genitive dual (يومين, not يومان).
+ */
+export function countPhrase(unit: Unit, n: number, lang: Language, afterPreposition = false): string {
   if (lang === 'ar') {
     if (n === 0) return `${localizeDigits(0, 'ar')} ${AR[unit].other.replace('{n} ', '')}`;
+    if (n === 2 && afterPreposition) return AR_DUAL_GENITIVE[unit];
     return AR[unit][arabicForm(n)].replace('{n}', formatNumber(n, 'ar'));
   }
   return `${formatNumber(n, 'en')} ${EN[unit][n === 1 ? 0 : 1]}`;

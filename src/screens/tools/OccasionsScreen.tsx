@@ -59,7 +59,7 @@ export default function OccasionsScreen() {
       ? t('occasions.today')
       : inDays === 1
         ? t('occasions.tomorrow')
-        : t('occasions.inDays', { days: countPhrase('day', inDays, lang) });
+        : t('occasions.inDays', { days: countPhrase('day', inDays, lang, true) });
 
   const shareOccasion = async (u: UpcomingOccasion, key: string) => {
     const name = isRTL ? u.occasion.nameAr : u.occasion.nameEn;

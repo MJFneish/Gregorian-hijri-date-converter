@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Cake, CalendarHeart, ChevronLeft, ChevronRight, Hourglass, Scale, type LucideIcon } from 'lucide-react-native';
+import { Cake, CalendarHeart, ChevronLeft, ChevronRight, Hourglass, Scale, UtensilsCrossed, type LucideIcon } from 'lucide-react-native';
 
 import { Card } from '../components/ui/Card';
 import { PressableScale } from '../components/ui/PressableScale';
@@ -22,6 +22,7 @@ const TOOLS: ReadonlyArray<{ route: ToolRoute; Icon: LucideIcon; key: string }> 
   { route: 'CompareOffices', Icon: Scale, key: 'compare' },
   { route: 'Occasions', Icon: CalendarHeart, key: 'occasions' },
   { route: 'Birthday', Icon: Cake, key: 'birthday' },
+  { route: 'Fasting', Icon: UtensilsCrossed, key: 'fasting' },
   { route: 'DaysBetween', Icon: Hourglass, key: 'daysBetween' },
 ];
 

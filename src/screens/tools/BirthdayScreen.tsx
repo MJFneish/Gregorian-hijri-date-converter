@@ -100,7 +100,7 @@ export default function BirthdayScreen() {
                     ? t('birthday.today')
                     : info.next.inDays === 1
                       ? t('birthday.tomorrow')
-                      : t('birthday.inDays', { days: countPhrase('day', info.next.inDays, lang) })}
+                      : t('birthday.inDays', { days: countPhrase('day', info.next.inDays, lang, true) })}
                 </Text>
                 <Text style={[typography.body, { color: colors.text, textAlign }]}>
                   {t('birthday.turning', { age: localizeDigits(info.next.turning, lang) })}

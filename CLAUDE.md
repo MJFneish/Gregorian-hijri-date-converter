@@ -167,6 +167,20 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   date, the next Hijri birthday (countdown, Gregorian date, age reached; a 30th in a 29-day month
   falls on the 29th — `clamped`) and the age in Hijri vs Gregorian years (`spanPhrase` in
   `i18n/plural.ts`).
+- **Fasting days** ([`FastingScreen`](./src/screens/tools/FastingScreen.tsx),
+  [`core/fasting.ts`](./src/core/fasting.ts)) — list only, **no notifications** (user's choice).
+  Rules researched 2026-10-26 in the marjas' own texts: Sistani *Islamic Laws* r.1716 (recommended)
+  / r.1707, 1715 (haram/makruh) and *Minhaj* 1063–1066; Khamenei رساله نماز و روزه 976–980 and
+  *Rules of Fasting* Q2/Q4; Fadlallah's treatise (أنواع الصوم) and his Arafah/Shawwal articles on
+  bayynat.org.lb. Main list = what they share: first Thursday (days 1–7), middle Wednesday (first
+  Wednesday of the 11th–20th = always 11–17), last Thursday, White Days 13–15, all of Rajab and
+  Sha'ban, 27 Rajab, 17 Rabi' al-Awwal, 25 Dhu al-Qi'dah, 18 and 24 Dhu al-Hijjah, 9 Dhu
+  al-Hijjah (Arafah — only if it won't weaken you from its du'a; discouraged if the crescent is in
+  doubt, so a caution shows when the month start isn't official). Tagged "Sistani's list": 1–8
+  Dhu al-Hijjah, 1/3/7 Muharram, 4–9 Shawwal. **Never suggested**: Ramadan (obligatory), 1 Shawwal
+  and 10 Dhu al-Hijjah (forbidden), Ashura (discouraged — shown as "abstain in mourning until after
+  Asr, not a fast"). Left out as single-source/too broad: Nowruz, 29 Dhu al-Qi'dah, 15 Jumada
+  al-Ula, every Thursday/Friday. Default window: this month + 2; "Show the whole year" → 12.
 - **RN Android keeps a stale "busy" in the content description** of a view with no
   `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
   updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,
@@ -235,6 +249,9 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
 - Counted phrases ("3 years and 2 months", "٣ سنوات وشهران") come from
   [`src/i18n/plural.ts`](./src/i18n/plural.ts), **not** i18next plurals — those need
   `Intl.PluralRules`, which Hermes doesn't reliably provide, and Arabic needs 6 CLDR forms.
+  **When the template puts the count after a preposition** ("بعد {{days}}", "إلى {{days}}",
+  "بـ{{days}}"), call `countPhrase(unit, n, lang, true)`: Arabic then needs the genitive dual
+  (بعد يومين — "بعد يومان" was a real bug on the Today card and every tool page, fixed in v1.8.0).
 - Arabic UI shows Arabic-Indic digits via `localizeDigits()`; Gregorian month names are Levantine
   (كانون الثاني…), as Lebanese calendars print them.
 

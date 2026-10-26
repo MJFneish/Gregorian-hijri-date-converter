@@ -6,6 +6,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import BirthdayScreen from '../screens/tools/BirthdayScreen';
 import CompareOfficesScreen from '../screens/tools/CompareOfficesScreen';
 import DaysBetweenScreen from '../screens/tools/DaysBetweenScreen';
+import FastingScreen from '../screens/tools/FastingScreen';
 import OccasionsScreen from '../screens/tools/OccasionsScreen';
 import { useDirection } from '../hooks/useDirection';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -33,6 +34,7 @@ export function RootNavigator() {
       <Stack.Screen name="CompareOffices" component={CompareOfficesScreen} options={toolPage} />
       <Stack.Screen name="Occasions" component={OccasionsScreen} options={toolPage} />
       <Stack.Screen name="Birthday" component={BirthdayScreen} options={toolPage} />
+      <Stack.Screen name="Fasting" component={FastingScreen} options={toolPage} />
       <Stack.Screen name="DaysBetween" component={DaysBetweenScreen} options={toolPage} />
     </Stack.Navigator>
   );

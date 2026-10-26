@@ -46,7 +46,7 @@ export default function CompareOfficesScreen({ route }: Props) {
   const offsetText = (row: OfficeDate) =>
     row.offset === 0
       ? t('compare.same')
-      : t(row.offset > 0 ? 'compare.ahead' : 'compare.behind', { days: countPhrase('day', Math.abs(row.offset), lang) });
+      : t(row.offset > 0 ? 'compare.ahead' : 'compare.behind', { days: countPhrase('day', Math.abs(row.offset), lang, true) });
 
   return (
     <PageScreen title={t('tools.compare.title')} subtitle={t('tools.compare.description')}>
@@ -65,7 +65,7 @@ export default function CompareOfficesScreen({ route }: Props) {
       >
         {spread === 0 ? <CircleCheck size={18} color={colors.celebration} /> : <GitCompareArrows size={18} color={colors.accent} />}
         <Text style={[typography.bodyStrong, styles.flex, { color: spread === 0 ? colors.celebration : colors.accent, textAlign }]}>
-          {spread === 0 ? t('compare.agree') : t('compare.differ', { days: countPhrase('day', spread, lang) })}
+          {spread === 0 ? t('compare.agree') : t('compare.differ', { days: countPhrase('day', spread, lang, true) })}
         </Text>
       </View>
 

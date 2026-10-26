@@ -26,6 +26,10 @@
       "title": "Hijri birthday",
       "description": "Your next Hijri birthday and your age in Hijri years."
     },
+    "fasting": {
+      "title": "Fasting days",
+      "description": "Recommended (mustahab) fasts in the coming months."
+    },
     "daysBetween": {
       "title": "Days between",
       "description": "Count the days, months and years between two dates."
@@ -157,6 +161,37 @@
     "gregorianAge": "In Gregorian years",
     "why": "A Hijri year is about 11 days shorter than a Gregorian one, so your Hijri age runs ahead and your Hijri birthday comes about 11 days earlier each year.",
     "forget": "Forget my birth date"
+  },
+  "fasting": {
+    "reason": {
+      "firstThursday": "First Thursday of the month",
+      "middleWednesday": "Middle Wednesday of the month",
+      "lastThursday": "Last Thursday of the month",
+      "whiteDays": "The White Days (13th–15th)",
+      "mabath": "The Prophet's mission (Mab'ath)",
+      "mawlid": "The Prophet's birthday",
+      "dahwAlArd": "Day of Dahw al-Ard",
+      "ghadir": "Eid al-Ghadir",
+      "mubahala": "Day of Mubahala",
+      "arafah": "Day of Arafah — if fasting won't weaken you from its du'a",
+      "dhulHijjahDays": "First days of Dhu al-Hijjah",
+      "muharramDays": "1st, 3rd and 7th of Muharram",
+      "shawwalDays": "4th–9th of Shawwal",
+      "ashuraAbstain": "Ashura — not a fast: abstain in mourning until after Asr"
+    },
+    "rajab": "Rajab: fasting all of it, or any day of it, is recommended",
+    "shaban": "Sha'ban: fasting all of it, or any day of it, is recommended",
+    "range": "{{from}} – {{to}}",
+    "sistani": "Sistani's list",
+    "arafahCaution": "This month's start is calculated. If the crescent is in doubt, fasting on Arafah is discouraged.",
+    "showYear": "Show the whole year",
+    "notesTitle": "Good to know",
+    "note": {
+      "forbidden": "Fasting is forbidden on Eid al-Fitr (1 Shawwal) and Eid al-Adha (10 Dhu al-Hijjah). Ramadan is obligatory, so it isn't listed.",
+      "ashura": "Ashura (10 Muharram) is not a day to fast: abstain from food and drink in mourning until after the afternoon (Asr) prayer, without the intention of fasting.",
+      "conditions": "A recommended fast isn't valid while you still owe Ramadan make-up days, or while travelling; don't fast if it would harm you.",
+      "sources": "From the practical treatises of Sayyed Sistani, Sayyed Khamenei and Sayyed Fadlallah. Days tagged “Sistani's list” appear in Sayyed Sistani's list only. Ask your marja's office about your own case."
+    }
   },
   "between": {
     "title": "Days between",

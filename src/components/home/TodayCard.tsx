@@ -140,7 +140,7 @@ export function TodayCard({ onPressMethod }: Props) {
           <Text style={[typography.caption, styles.infoText, { color: colors.onHeroMuted, textAlign }]}>
             {t('home.nextOccasion', {
               name: next.day.occasions.map(o => (isRTL ? o.nameAr : o.nameEn)).join(' · '),
-              when: next.inDays === 1 ? t('home.tomorrow') : t('home.inDays', { days: countPhrase('day', next.inDays, lang) }),
+              when: next.inDays === 1 ? t('home.tomorrow') : t('home.inDays', { days: countPhrase('day', next.inDays, lang, true) }),
             })}
           </Text>
         </View>
