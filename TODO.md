@@ -91,7 +91,7 @@ commit + push → GitHub release; one APK build at the very end.
 - [x] v1.3.0 — 3 tabs (Converter · Tools · Settings), Home = Today + converter only (no app
       header), `PageScreen` tool pages, Days between moved to Tools, share image without header
 - [x] v1.4.0 — Tonight's moon on the Today card
-- [ ] v1.5.0 — Compare offices (one date under every method)
+- [x] v1.5.0 — Compare offices (one date under every method)
 - [ ] v1.6.0 — Occasions list with countdowns, each shareable as an image
 - [ ] v1.7.0 — Hijri birthday (next Hijri birthday + age in Hijri years)
 - [ ] v1.8.0 — Recommended fasting days (list only — no notifications, user's choice)

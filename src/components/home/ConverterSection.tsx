@@ -1,11 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Share from 'react-native-share';
 import { captureRef } from 'react-native-view-shot';
-import { ArrowDown, ArrowLeftRight, CalendarCheck2, Copy, Info, Moon, Share2, Sun } from 'lucide-react-native';
+import {
+  ArrowDown,
+  ArrowLeftRight,
+  CalendarCheck2,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Info,
+  Moon,
+  Scale,
+  Share2,
+  Sun,
+} from 'lucide-react-native';
 
 import { gregorianToJdn, jdnToGregorian, todayJdn } from '../../core/calendar';
 import { formatGregorian, formatHijri } from '../../core/format';
@@ -14,6 +28,7 @@ import { moonPhaseOnDay } from '../../core/moon';
 import { dayInfo } from '../../core/today';
 import { useConversionOptions } from '../../hooks/useConversionOptions';
 import { useDirection } from '../../hooks/useDirection';
+import type { RootStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme/useTheme';
 import { radius, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
@@ -58,9 +73,11 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 export function ConverterSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { rowDirection, textAlign, lang } = useDirection();
+  const { rowDirection, textAlign, lang, isRTL } = useDirection();
   const opts = useConversionOptions();
   const { scrollToView } = useHomeScroll();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const [direction, setDirection] = useState<Direction>('toHijri');
   const [draftJdn, setDraftJdn] = useState(() => todayJdn());
@@ -236,8 +253,19 @@ export function ConverterSection() {
                 </View>
               )}
               <ResultPanel id="result" label={resultLabel} date={resultText} detail={detail} moon={moon} interactive />
-              <View style={styles.source}>
+              <View style={[styles.source, { flexDirection: rowDirection }]}>
                 <SourceBadge source={info.source} />
+                {/* Same row as the badge, so the result card doesn't grow (Home stays short). */}
+                <Pressable
+                  onPress={() => navigation.navigate('CompareOffices', { jdn: applied.jdn })}
+                  style={[styles.compareLink, { flexDirection: rowDirection }]}
+                  accessibilityRole="button"
+                  hitSlop={8}
+                >
+                  <Scale size={16} color={colors.primary} />
+                  <Text style={[typography.caption, { color: colors.primary }]}>{t('home.compareOffices')}</Text>
+                  <Chevron size={16} color={colors.primary} />
+                </Pressable>
               </View>
               {info.occasions.length > 0 && (
                 <View style={styles.occasions}>
@@ -334,7 +362,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   staleText: { flex: 1 },
-  source: { marginTop: spacing.md },
+  source: { marginTop: spacing.md, alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  compareLink: { alignItems: 'center', gap: 4, minHeight: 40, paddingHorizontal: spacing.xs },
   occasions: { marginTop: spacing.md, gap: spacing.sm },
   actions: { gap: spacing.md, marginTop: spacing.lg },
   actionBox: { flex: 1 },

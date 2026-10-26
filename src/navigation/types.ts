@@ -4,4 +4,6 @@ export type RootStackParamList = {
   Onboarding: { replay?: boolean } | undefined;
   // Pages opened from the Tools tab (screens/tools/).
   DaysBetween: undefined;
+  /** `jdn` = the day to compare (from the converter's result); defaults to today. */
+  CompareOffices: { jdn?: number } | undefined;
 };

@@ -181,6 +181,14 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   Arabic (`RootNavigator`'s `toolPage` options — native RTL is off, so the stack doesn't mirror
   itself). Adding a tool = screen + route in `navigation/types.ts` + `RootNavigator` + a `TOOLS`
   entry + `tools.<key>.title/description` strings. Days-between moved there first.
+- **Compare offices** ([`CompareOfficesScreen`](./src/screens/tools/CompareOfficesScreen.tsx),
+  [`core/compare.ts`](./src/core/compare.ts)): one day under every method, each row's offset vs.
+  the user's method ("1 day ahead" = it shows today what the user's office shows tomorrow; found by
+  label search ±3 days, falling back to next-month starts for a 30th the other office doesn't
+  have), plus when each office began its current month. The ±adjustment is **not** applied there
+  (raw office calendars, with a note). Reached from Tools (today) or the converter result's
+  "Compare offices" link (that day, `route.params.jdn`) — the link shares the source badge's
+  row so the result card doesn't grow.
 - **Wheel picker** ([`WheelPicker.tsx`](./src/components/picker/WheelPicker.tsx)): native date
   pickers can't show Hijri months. A **plain ScrollView, not a FlatList** — the wheels sit inside
   the Home screen's vertical ScrollView, and a same-direction VirtualizedList nested there

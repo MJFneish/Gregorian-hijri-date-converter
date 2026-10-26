@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ChevronLeft, ChevronRight, Hourglass, type LucideIcon } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Hourglass, Scale, type LucideIcon } from 'lucide-react-native';
 
 import { Card } from '../components/ui/Card';
 import { PressableScale } from '../components/ui/PressableScale';
@@ -19,6 +19,7 @@ type ToolRoute = Exclude<keyof RootStackParamList, 'Main' | 'Onboarding'>;
 /** Every page reachable from the Tools tab, in display order. A new tool = a screen in
  * src/screens/tools/, a route in navigation/types.ts + RootNavigator, and an entry here. */
 const TOOLS: ReadonlyArray<{ route: ToolRoute; Icon: LucideIcon; key: string }> = [
+  { route: 'CompareOffices', Icon: Scale, key: 'compare' },
   { route: 'DaysBetween', Icon: Hourglass, key: 'daysBetween' },
 ];
 

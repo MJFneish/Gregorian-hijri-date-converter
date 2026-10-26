@@ -14,6 +14,10 @@
   "tools": {
     "title": "Tools",
     "subtitle": "More ways to work with dates, each on its own page.",
+    "compare": {
+      "title": "Compare offices",
+      "description": "One date in every marja's calendar, side by side."
+    },
     "daysBetween": {
       "title": "Days between",
       "description": "Count the days, months and years between two dates."
@@ -88,7 +92,8 @@
     "convertButton": "Convert",
     "converting": "Converting…",
     "convertHint": "Converts the picked date and scrolls to the result",
-    "staleResult": "The date above changed — showing the previous result. Press Convert to update."
+    "staleResult": "The date above changed — showing the previous result. Press Convert to update.",
+    "compareOffices": "Compare offices"
   },
   "moon": {
     "phase": {
@@ -103,6 +108,18 @@
     },
     "illumination": "{{percent}} illuminated",
     "age": "Moon age: {{days}} days"
+  },
+  "compare": {
+    "date": "Date to compare",
+    "agree": "All offices agree on this day",
+    "differ": "The offices differ by up to {{days}}",
+    "yourChoice": "Your choice",
+    "same": "Same date",
+    "ahead": "{{days}} ahead",
+    "behind": "{{days}} behind",
+    "monthTitle": "This month, by office",
+    "monthStarted": "{{month}} began on {{date}} · {{length}}",
+    "adjustmentNote": "Your Hijri date adjustment (Settings) isn't applied here — each row is that office's own calendar."
   },
   "between": {
     "title": "Days between",
