@@ -34,11 +34,13 @@ export default function CompareOfficesScreen({ route }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { rowDirection, textAlign, lang } = useDirection();
-  const { method: reference, adjustment } = useConversionOptions();
+  const opts = useConversionOptions();
+  const { method: reference, adjustment } = opts;
   const [jdn, setJdn] = useState(() => route.params?.jdn ?? todayJdn());
   const [picking, setPicking] = useState(false);
 
-  const rows = useMemo(() => compareOffices(jdn, reference), [jdn, reference]);
+  // `opts` (not just the method) so a downloaded table update recomputes the rows.
+  const rows = useMemo(() => compareOffices(jdn, opts.method), [jdn, opts]);
   const spread = Math.max(...rows.map(r => r.offset)) - Math.min(...rows.map(r => r.offset));
   const gregorian = jdnToGregorian(jdn);
   const weekday = weekdayName(weekdayOfJdn(jdn), lang);

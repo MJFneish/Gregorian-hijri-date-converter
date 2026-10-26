@@ -22,6 +22,7 @@ import {
 
 import { version } from '../../package.json';
 import { AppLogo } from '../components/brand/AppLogo';
+import { CalendarDataCard } from '../components/settings/CalendarDataCard';
 import { Card } from '../components/ui/Card';
 import { PressableScale } from '../components/ui/PressableScale';
 import { SectionLabel } from '../components/ui/SectionLabel';
@@ -232,6 +233,10 @@ export default function SettingsScreen() {
             {t('settings.adjustmentPreview', { date: previewToday })}
           </Text>
         </Card>
+
+        {/* Calendar data: month-start updates without a new APK */}
+        <SectionLabel>{t('settings.calendarData.title')}</SectionLabel>
+        <CalendarDataCard />
 
         {/* Help */}
         <SectionLabel>{t('settings.help')}</SectionLabel>

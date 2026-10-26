@@ -10,6 +10,8 @@ export const TABLE_FIRST_YEAR = 1343;
 export const TABLE_LAST_YEAR = 1500;
 /** Last month whose Iran-official start comes from real published data (later ones are predicted). */
 export const IRAN_LAST_OFFICIAL = { year: 1447, month: 10 } as const;
+/** When these tables were generated — compared with the downloadable copy (data/hijri-tables.json). */
+export const TABLES_GENERATED = '2026-10-26T10:38:09Z';
 
 export const METHOD_TABLES = {
   "iran": {

@@ -49,10 +49,18 @@ numbers clearly improve; update the comment above the constant and CLAUDE.md's t
 ## 4. Regenerate and test
 
 ```bash
-node scripts/build-hijri-tables.js     # ~30 s
-yarn test                              # must stay green
+node scripts/build-hijri-tables.js     # ~60 s — writes tables.generated.ts AND data/hijri-tables.json
+yarn test                              # must stay green (tables.test.ts checks the two match)
 ```
 
-The generated file is committed. If the table range ever changes (`FIRST_YEAR`/`LAST_YEAR`), also
+Both generated files are committed. **Push `data/hijri-tables.json` to `develop` to reach phones
+without a new APK** (since v1.10.0): installed apps download
+`https://raw.githubusercontent.com/MJFneish/Gregorian-hijri-date-converter/develop/data/hijri-tables.json`
+at most once a day (or from Settings → Calendar data → Check for updates), validate it
+(`validateTableData`: same year range, well-formed masks, 353–356-day years, every month start
+within 3 days of the bundled table) and switch to it when its `generated` timestamp is newer. The
+script keeps the old timestamp when the tables didn't change, so re-running it alone triggers no
+downloads. A wrong file can't brick dates — it's rejected — but a *plausible* wrong file would be
+applied, so only push tables that passed `yarn test`. If the table range ever changes (`FIRST_YEAR`/`LAST_YEAR`), also
 check `HIJRI_MIN_YEAR`/`HIJRI_MAX_YEAR` and the Gregorian picker range in
 `src/core/hijri/convert.ts`.

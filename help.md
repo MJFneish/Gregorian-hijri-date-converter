@@ -59,7 +59,7 @@ Updates `package.json` (source of truth — Settings → About shows it), `andro
 
 ```bash
 node scripts/build-hijri-tables.js --calibrate   # accuracy of the crescent rules vs. real data (no writes)
-node scripts/build-hijri-tables.js               # regenerate src/core/hijri/tables.generated.ts (~30 s)
+node scripts/build-hijri-tables.js               # regenerate tables.generated.ts + data/hijri-tables.json (~60 s); push the JSON = phones update
 yarn test                                        # always run after regenerating
 ```
 

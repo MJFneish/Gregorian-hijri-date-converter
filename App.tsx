@@ -16,6 +16,7 @@ import { ShareHost } from './src/components/share/ShareHost';
 import { ToastHost } from './src/components/Toast';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useSettingsStore } from './src/store/useSettingsStore';
+import { useTableStore } from './src/store/useTableStore';
 import { useTheme } from './src/theme/useTheme';
 
 // The loading screen stays up at least this long even when hydration is instant — a flash reads
@@ -34,6 +35,11 @@ function AppContent() {
     const id = setTimeout(() => setShowLoading(false), Math.max(0, remaining));
     return () => clearTimeout(id);
   }, [hasHydrated]);
+
+  // Month-start updates without a new APK: restore a stored download, check daily (useTableStore).
+  useEffect(() => {
+    useTableStore.getState().init();
+  }, []);
 
   // The JS loading screen's first frame matches the native splash, so swap them without a fade.
   const hideNativeSplash = useCallback(() => {

@@ -269,6 +269,21 @@
     "adjustmentUnit": "days",
     "adjustmentHint": "If your local announcement differs from the calculation, shift every Hijri date by up to two days.",
     "adjustmentPreview": "Today will show as {{date}}",
+    "calendarData": {
+      "title": "Calendar data",
+      "builtIn": "Built-in month data ({{date}})",
+      "downloaded": "Updated month data ({{date}})",
+      "lastCheck": "Last checked {{date}}",
+      "neverChecked": "Not checked yet",
+      "hint": "When an office announces a month start that differs from the calculation, the app picks up the corrected months from the internet — no app update needed. It checks once a day.",
+      "check": "Check for updates",
+      "checking": "Checking…",
+      "status": {
+        "updated": "Updated — dates now follow the latest announcements.",
+        "upToDate": "Already up to date.",
+        "failed": "Couldn't check — no internet connection?"
+      }
+    },
     "help": "Help",
     "showIntro": "Show the introduction again",
     "about": "About",

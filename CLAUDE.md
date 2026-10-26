@@ -192,6 +192,22 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   (Fadlallah's reference), Najaf (Sistani) and Iran (best city), with Odeh zone, moon age and lag,
   and each office's expected 1st (raw tables). Computed in a `setTimeout` after the frame (a few
   hundred ms of astronomy) with a "Calculating…" state.
+
+### Month-start updates without a new APK (v1.10.0)
+
+- `scripts/build-hijri-tables.js` also writes the tables as **`data/hijri-tables.json`** (2.4 KB,
+  `format: 1`, `generated` timestamp — reused when the tables didn't change). Installed apps
+  download it from the repo's `develop` branch ([`useTableStore`](./src/store/useTableStore.ts):
+  `init()` at startup restores a stored download, then checks if 24 h passed; Settings →
+  Calendar data → "Check for updates" forces one) and apply it when **newer** and **valid**
+  (`validateTableData` in [`tables.ts`](./src/core/hijri/tables.ts): same 1343–1500 range,
+  well-formed masks, 353–356-day years, every month start within 3 days of the bundled one).
+- The tables are swappable at runtime (`setTableData`, `currentTables`, `iranLastOfficial()` —
+  `hijriSource` reads the cutoff from the tables in use, so an update can move "official").
+  `useConversionOptions()` carries `tablesVersion`, so **every memo keyed on `opts` recomputes**
+  after an update — key conversion memos on the whole `opts`, not just `opts.method`.
+- `tables.test.ts` fails if `data/hijri-tables.json` and `tables.generated.ts` differ: commit both.
+  Publishing a correction = the `update-hijri-data` skill + push; no app release needed.
 - **RN Android keeps a stale "busy" in the content description** of a view with no
   `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
   updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,

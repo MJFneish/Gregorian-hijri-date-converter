@@ -1,6 +1,7 @@
 import { gregorianMonthLength, gregorianToJdn, jdnToGregorian, type GregorianDate } from '../calendar';
 import type { MethodId } from './methods';
 import {
+  iranLastOfficial,
   isYearInTable,
   tableBounds,
   tableLookup,
@@ -9,7 +10,6 @@ import {
   TABLE_FIRST_YEAR,
   TABLE_LAST_YEAR,
 } from './tables';
-import { IRAN_LAST_OFFICIAL } from './tables.generated';
 import { tabularFromJdn, tabularMonthLength, tabularToJdn } from './tabular';
 import type { DateSource, HijriDate } from './types';
 
@@ -25,6 +25,9 @@ export interface ConversionOptions {
   /** Manual shift in days (Settings → Hijri date adjustment), −2…+2. Positive = the Hijri date
    * shown for a given Gregorian day is later. */
   adjustment: number;
+  /** Not read by the conversions: changes when downloaded month tables replace the ones in use,
+   * so React memos keyed on the options object recompute (see useConversionOptions). */
+  tablesVersion?: number;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -106,9 +109,9 @@ export function hijriSource(date: HijriDate, method: MethodId): DateSource {
   if (!isYearInTable(date.year)) return 'approximate';
   if (method === 'ummalqura') return 'official';
   if (method === 'iran') {
-    const official =
-      date.year < IRAN_LAST_OFFICIAL.year ||
-      (date.year === IRAN_LAST_OFFICIAL.year && date.month <= IRAN_LAST_OFFICIAL.month);
+    // From the tables in use (a downloaded update can move this cutoff).
+    const last = iranLastOfficial();
+    const official = date.year < last.year || (date.year === last.year && date.month <= last.month);
     return official ? 'official' : 'calculated';
   }
   return 'calculated';

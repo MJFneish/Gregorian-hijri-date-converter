@@ -96,7 +96,7 @@ commit + push → GitHub release; one APK build at the very end.
 - [x] v1.7.0 — Hijri birthday (next Hijri birthday + age in Hijri years)
 - [x] v1.8.0 — Recommended fasting days (list only — no notifications, user's choice)
 - [x] v1.9.0 — Crescent forecast (visibility around the next month start)
-- [ ] v1.10.0 — Month-start updates without a new APK (JSON in the GitHub repo)
+- [x] v1.10.0 — Month-start updates without a new APK (JSON in the GitHub repo)
 
 ## Ideas / not built (ask the user before building)
 - ~~Month calendar grid~~ — declined: the app is a converter, not a calendar (2026-10-26)
