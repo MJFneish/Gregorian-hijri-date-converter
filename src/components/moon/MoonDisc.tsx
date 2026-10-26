@@ -4,6 +4,7 @@ import Svg, { Circle, Defs, Path, RadialGradient, Stop } from 'react-native-svg'
 
 import type { MoonPhase } from '../../core/moon';
 import { brand } from '../../theme/colors';
+import { useCaptureHold } from '../share/CaptureReady';
 
 /** Full-moon photo texture (NASA LRO mosaic, projected by scripts/generate-moon.js). */
 const TEXTURE = require('../../../assets/moon/moon.png');
@@ -87,6 +88,8 @@ interface Props {
  * background; decorative for screen readers — callers describe the phase in text.
  */
 export function MoonDisc({ phase, size = MOON_SIZE, id = 'moonGlow' }: Props) {
+  // In a share-image capture, wait for the photo (no-op on screen).
+  const releaseCapture = useCaptureHold();
   const margin = moonGlowMargin(size);
   const box = size + margin * 2;
   const c = box / 2;
@@ -114,6 +117,8 @@ export function MoonDisc({ phase, size = MOON_SIZE, id = 'moonGlow' }: Props) {
       <Image
         source={TEXTURE}
         fadeDuration={0}
+        onLoad={releaseCapture}
+        onError={releaseCapture}
         style={[styles.texture, { left: margin, top: margin, width: size, height: size }]}
       />
       <Svg width={box} height={box} style={StyleSheet.absoluteFill}>

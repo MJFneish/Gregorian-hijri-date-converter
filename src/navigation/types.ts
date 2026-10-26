@@ -6,4 +6,5 @@ export type RootStackParamList = {
   DaysBetween: undefined;
   /** `jdn` = the day to compare (from the converter's result); defaults to today. */
   CompareOffices: { jdn?: number } | undefined;
+  Occasions: undefined;
 };

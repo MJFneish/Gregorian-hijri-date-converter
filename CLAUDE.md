@@ -142,16 +142,25 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   ([`ShareCard`](./src/components/home/ShareCard.tsx), current theme + language), plus the old
   sentence as the caption. `react-native-view-shot` 6.1.1 captures it, `react-native-share`
   12.3.1 sends it (RN's own `Share` can't send files on Android). Both pinned exactly.
-- The ShareCard is **always mounted, parked off-screen** (`position: absolute, left: -10000`) in
-  ConverterSection, so it's laid out and its moon photo loaded when Share is tapped. That works
-  because view-shot on Android calls `view.draw()` into its own bitmap (not PixelCopy of the
-  screen), and RN 0.87 has view culling off by default (`enableViewCulling`); revisit if either
-  changes. **Not inside a clipped 0×0 box** (the first version): Yoga measured the card's
+- **One share mechanism for every card** (v1.6.0): [`ShareHost`](./src/components/share/ShareHost.tsx)
+  (mounted in `App.tsx` around the navigator) + `useShareImage().share({ card, message, filename })`.
+  The host renders the card on demand, **parked off-screen** (`position: absolute, left: -10000`),
+  waits until it has really drawn — every [`useCaptureHold`](./src/components/share/CaptureReady.tsx)
+  released: `MoonDisc` on its photo's `onLoad`, `GradientFill` once sized — plus two frames, then
+  captures (2.5 s timeout). Any new component that draws asynchronously must hold the same way.
+  This works because view-shot on Android calls `view.draw()` into its own bitmap (not PixelCopy
+  of the screen), and RN 0.87 has view culling off by default (`enableViewCulling`); revisit if
+  either changes. **Not inside a clipped 0×0 box** (the first version): Yoga measured the card's
   content against that zero height and the capture was a 360×48 dp strip of padding (found on
-  the emulator, 2026-10-26). No elevation in the ShareCard (shadows don't survive the software
-  canvas), a border instead.
-- "Busy" on the Share button covers the capture only; `Share.open` isn't awaited, so the button
+  the emulator, 2026-10-26). The tracker object must stay stable for a capture (a new identity
+  would make holders release + re-hold, and a release can fire the capture early). No elevation
+  in a share card (shadows don't survive the software canvas), a border instead.
+- "Busy" on a Share button covers the capture only; `Share.open` isn't awaited, so the button
   never waits on what the receiving app or a dismissed sheet reports back.
+- **Occasions** ([`OccasionsScreen`](./src/screens/tools/OccasionsScreen.tsx), `upcomingOccasions`
+  in `core/today.ts`): every occasion from today to the same Hijri date next year (so each appears
+  exactly once), grouped by Hijri month, All / Mourning / Celebrations filter, countdown chip, and a
+  share button per row — the same ShareCard with `highlight={occasion}` leading the card.
 - **RN Android keeps a stale "busy" in the content description** of a view with no
   `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
   updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,

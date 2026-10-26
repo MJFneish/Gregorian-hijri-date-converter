@@ -49,3 +49,8 @@ export function formatTime(instant: Date, lang: Language): string {
   const mm = String(instant.getMinutes()).padStart(2, '0');
   return localizeDigits(`${hh}:${mm}`, lang);
 }
+
+/** "2026-10-26" — for file names and logs, not for display. */
+export function isoDate({ year, month, day }: GregorianDate): string {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}

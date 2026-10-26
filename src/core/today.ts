@@ -1,5 +1,13 @@
 import { jdnToGregorian, todayJdn, weekdayOfJdn, type GregorianDate } from './calendar';
-import { hijriMonthLength, hijriOfJdn, hijriSource, type ConversionOptions, type DateSource, type HijriDate } from './hijri';
+import {
+  hijriMonthLength,
+  hijriOfJdn,
+  hijriSource,
+  jdnOfHijri,
+  type ConversionOptions,
+  type DateSource,
+  type HijriDate,
+} from './hijri';
 import { isEveningAfterMaghrib } from './maghrib';
 import { occasionsOn, type Occasion } from './occasions';
 
@@ -22,6 +30,30 @@ export function dayInfo(jdn: number, opts: ConversionOptions): DayInfo {
     source: hijriSource(hijri, opts.method),
     occasions: occasionsOn(hijri, hijriMonthLength(hijri.year, hijri.month, opts.method)),
   };
+}
+
+export interface UpcomingOccasion {
+  occasion: Occasion;
+  day: DayInfo;
+  /** 0 = today. */
+  inDays: number;
+}
+
+/**
+ * Every occasion from `fromJdn` up to (not including) the same Hijri date a year later — so each
+ * occasion appears exactly once, in date order (Tools → Occasions).
+ */
+export function upcomingOccasions(fromJdn: number, opts: ConversionOptions): UpcomingOccasion[] {
+  const start = hijriOfJdn(fromJdn, opts);
+  const nextYear = start.year + 1;
+  const day = Math.min(start.day, hijriMonthLength(nextYear, start.month, opts.method));
+  const end = jdnOfHijri({ year: nextYear, month: start.month, day }, opts);
+  const out: UpcomingOccasion[] = [];
+  for (let jdn = fromJdn; jdn < end; jdn++) {
+    const info = dayInfo(jdn, opts);
+    for (const occasion of info.occasions) out.push({ occasion, day: info, inDays: jdn - fromJdn });
+  }
+  return out;
 }
 
 export interface TodaySummary {

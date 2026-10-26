@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+
+import { useCaptureHold } from '../share/CaptureReady';
 
 interface Props {
   /** ASCII gradient id, unique among gradients rendered at the same time. */
@@ -22,6 +24,11 @@ interface Props {
  */
 export function GradientFill({ id, from, to, stars }: Props) {
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  // In a share-image capture, wait until the gradient has been drawn at its measured size.
+  const releaseCapture = useCaptureHold();
+  useEffect(() => {
+    if (size) releaseCapture();
+  }, [size, releaseCapture]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;

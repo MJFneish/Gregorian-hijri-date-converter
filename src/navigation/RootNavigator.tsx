@@ -5,6 +5,7 @@ import MainTabs from './MainTabs';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import CompareOfficesScreen from '../screens/tools/CompareOfficesScreen';
 import DaysBetweenScreen from '../screens/tools/DaysBetweenScreen';
+import OccasionsScreen from '../screens/tools/OccasionsScreen';
 import { useDirection } from '../hooks/useDirection';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme } from '../theme/useTheme';
@@ -29,6 +30,7 @@ export function RootNavigator() {
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="CompareOffices" component={CompareOfficesScreen} options={toolPage} />
+      <Stack.Screen name="Occasions" component={OccasionsScreen} options={toolPage} />
       <Stack.Screen name="DaysBetween" component={DaysBetweenScreen} options={toolPage} />
     </Stack.Navigator>
   );

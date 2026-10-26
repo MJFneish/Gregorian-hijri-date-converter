@@ -18,6 +18,10 @@
       "title": "Compare offices",
       "description": "One date in every marja's calendar, side by side."
     },
+    "occasions": {
+      "title": "Occasions",
+      "description": "Every Shia occasion in the coming year, with a countdown."
+    },
     "daysBetween": {
       "title": "Days between",
       "description": "Count the days, months and years between two dates."
@@ -120,6 +124,16 @@
     "monthTitle": "This month, by office",
     "monthStarted": "{{month}} began on {{date}} · {{length}}",
     "adjustmentNote": "Your Hijri date adjustment (Settings) isn't applied here — each row is that office's own calendar."
+  },
+  "occasions": {
+    "filter": "Show",
+    "all": "All",
+    "mourning": "Mourning",
+    "celebration": "Celebrations",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inDays": "In {{days}}",
+    "share": "Share {{name}}"
   },
   "between": {
     "title": "Days between",

@@ -12,6 +12,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer, type Theme } from '@react
 import BootSplash from 'react-native-bootsplash';
 
 import { LoadingScreen } from './src/components/LoadingScreen';
+import { ShareHost } from './src/components/share/ShareHost';
 import { ToastHost } from './src/components/Toast';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useSettingsStore } from './src/store/useSettingsStore';
@@ -60,9 +61,12 @@ function AppContent() {
       {/* Edge-to-edge (RN 0.87 default): only the icon style is ours to set. */}
       <StatusBar barStyle={showLoading || isDark ? 'light-content' : 'dark-content'} />
       {hasHydrated && (
-        <NavigationContainer theme={navTheme}>
-          <RootNavigator />
-        </NavigationContainer>
+        // ShareHost renders cards off-screen to capture them as share images (useShareImage).
+        <ShareHost>
+          <NavigationContainer theme={navTheme}>
+            <RootNavigator />
+          </NavigationContainer>
+        </ShareHost>
       )}
       <ToastHost />
       {showLoading && <LoadingScreen onReady={hideNativeSplash} />}

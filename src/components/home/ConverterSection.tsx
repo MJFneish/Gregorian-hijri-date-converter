@@ -5,8 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
-import Share from 'react-native-share';
-import { captureRef } from 'react-native-view-shot';
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -22,7 +20,7 @@ import {
 } from 'lucide-react-native';
 
 import { gregorianToJdn, jdnToGregorian, todayJdn } from '../../core/calendar';
-import { formatGregorian, formatHijri } from '../../core/format';
+import { formatGregorian, formatHijri, isoDate } from '../../core/format';
 import { hijriOfJdn, jdnOfHijri, weekdayName } from '../../core/hijri';
 import { moonPhaseOnDay } from '../../core/moon';
 import { dayInfo } from '../../core/today';
@@ -43,6 +41,7 @@ import { useHomeScroll, type ViewRef } from './HomeScrollContext';
 import { ResultPanel } from './ResultPanel';
 import { ResultSkeleton } from './ResultSkeleton';
 import { ShareCard } from './ShareCard';
+import { useShareImage } from '../share/ShareHost';
 
 type Direction = 'toHijri' | 'toGregorian';
 
@@ -58,7 +57,6 @@ interface Conversion {
  * scroll to the result finish first. */
 const MIN_CONVERTING_MS = 550;
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /**
  * The converter. The wheels edit a *draft* (a JDN — one day on the shared timeline — plus the
@@ -77,15 +75,14 @@ export function ConverterSection() {
   const opts = useConversionOptions();
   const { scrollToView } = useHomeScroll();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { share: shareImage, busy: sharing } = useShareImage();
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const [direction, setDirection] = useState<Direction>('toHijri');
   const [draftJdn, setDraftJdn] = useState(() => todayJdn());
   const [applied, setApplied] = useState<Conversion>(() => ({ jdn: todayJdn(), direction: 'toHijri', run: 0 }));
   const [converting, setConverting] = useState(false);
-  const [sharing, setSharing] = useState(false);
   const resultRef = useRef<ViewRef>(null);
-  const shareCardRef = useRef<ViewRef>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -133,43 +130,16 @@ export function ConverterSection() {
     showToast(t('home.copied'));
   };
 
-  /**
-   * Shares the result as an image of the card (ShareCard), with the sentence as its caption. The
-   * capture is a data URI that react-native-share writes to the app's *internal* cache
-   * (`useInternalStorage`): its FileProvider covers that, needs no storage permission, whereas
-   * view-shot's own temp file can land in the external cache, which the provider doesn't cover.
-   * If the image can't be made or shared, it falls back to the text alone (the old behaviour).
-   *
-   * "Busy" covers the capture only; the sheet's promise isn't awaited, so the button never waits
-   * on whatever the receiving app (or a dismissed sheet) reports back.
-   */
-  const share = async () => {
-    if (sharing) return;
-    setSharing(true);
-    let image: string | null = null;
-    try {
-      image = await captureRef(shareCardRef, { format: 'jpg', quality: 0.95, result: 'data-uri' });
-    } catch {
-      image = null;
-    } finally {
-      setSharing(false);
-    }
-    const message = `${sentence}\n${t('home.shareFooter', { method: t(`methods.${opts.method}.name`) })}`;
-    // failOnCancel: false — dismissing the sheet isn't an error (and mustn't trigger the fallback).
-    const textOnly = { message, title: t('home.share'), failOnCancel: false };
-    if (!image) {
-      Share.open(textOnly).catch(() => {});
-      return;
-    }
-    const { year, month, day } = info.gregorian;
-    Share.open({
-      ...textOnly,
-      url: image,
-      type: 'image/jpeg',
-      filename: `HijriConverter-${year}-${pad2(month)}-${pad2(day)}`,
-      useInternalStorage: true,
-    }).catch(() => Share.open(textOnly).catch(() => {}));
-  };
+  /** Shares the result as an image of the card (ShareCard, via ShareHost) with the sentence as
+   * its caption; text only if the image can't be made. */
+  const share = () =>
+    shareImage({
+      card: (
+        <ShareCard info={info} label={resultLabel} date={resultText} detail={detail} moon={moon} method={opts.method} />
+      ),
+      message: `${sentence}\n${t('home.shareFooter', { method: t(`methods.${opts.method}.name`) })}`,
+      filename: `HijriConverter-${isoDate(info.gregorian)}`,
+    });
 
   return (
     <>
@@ -307,26 +277,6 @@ export function ConverterSection() {
           )}
         </Card>
       </View>
-
-      {/* The share image's source. Never visible: parked far off-screen, laid out at full size
-          with its moon photo loaded, so Share can capture it at once. Not a clipped 0×0 box — Yoga
-          measured the card's content against that zero height and captured a 360×48 dp strip. */}
-      <View
-        style={styles.shareStage}
-        pointerEvents="none"
-        importantForAccessibility="no-hide-descendants"
-        accessibilityElementsHidden
-      >
-        <ShareCard
-          ref={shareCardRef}
-          info={info}
-          label={resultLabel}
-          date={resultText}
-          detail={detail}
-          moon={moon}
-          method={opts.method}
-        />
-      </View>
     </>
   );
 }
@@ -367,5 +317,4 @@ const styles = StyleSheet.create({
   occasions: { marginTop: spacing.md, gap: spacing.sm },
   actions: { gap: spacing.md, marginTop: spacing.lg },
   actionBox: { flex: 1 },
-  shareStage: { position: 'absolute', top: 0, left: -10000 },
 });
