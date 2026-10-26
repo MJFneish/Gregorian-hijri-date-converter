@@ -129,8 +129,38 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   Scientific Visualization Studio", shown in Settings → About) onto the near side →
   `assets/moon/moon{,@2x,@3x}.png` (96/192/288 px = `MOON_SIZE` 96 dp). Pure asset step, no phase baked in.
 - The result card's date sits in an always-dark night panel (the moon only looks real on a
-  night sky) at `displayLarge` (was `displayMedium`), with the moon row under it; `ResultSkeleton`
-  mirrors that shape.
+  night sky) at `displayLarge` (was `displayMedium`), with the moon row under it —
+  [`ResultPanel`](./src/components/home/ResultPanel.tsx), shared with the share image;
+  `ResultSkeleton` mirrors that shape.
+
+### Share = an image of the result (user request, 2026-10-23)
+
+- **Share** sends a picture of the result card (night panel + moon + texts, source badge,
+  occasions) under the app's name, with the method as a footer
+  ([`ShareCard`](./src/components/home/ShareCard.tsx), current theme + language), plus the old
+  sentence as the caption. `react-native-view-shot` 6.1.1 captures it, `react-native-share`
+  12.3.1 sends it (RN's own `Share` can't send files on Android). Both pinned exactly.
+- The ShareCard is **always mounted, parked off-screen** (`position: absolute, left: -10000`) in
+  ConverterSection, so it's laid out and its moon photo loaded when Share is tapped. That works
+  because view-shot on Android calls `view.draw()` into its own bitmap (not PixelCopy of the
+  screen), and RN 0.87 has view culling off by default (`enableViewCulling`); revisit if either
+  changes. **Not inside a clipped 0×0 box** (the first version): Yoga measured the card's
+  content against that zero height and the capture was a 360×48 dp strip of padding (found on
+  the emulator, 2026-10-26). No elevation in the ShareCard (shadows don't survive the software
+  canvas), a border instead.
+- "Busy" on the Share button covers the capture only; `Share.open` isn't awaited, so the button
+  never waits on what the receiving app or a dismissed sheet reports back.
+- **RN Android keeps a stale "busy" in the content description** of a view with no
+  `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
+  updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,
+  and UI Automator dumps show `desc="busy"`. Give any view that toggles `busy` an explicit
+  `accessibilityLabel` (Convert and Share do).
+- Captured as a JPEG **data URI** and shared with `useInternalStorage: true`: react-native-share
+  then writes it to the internal cache, which its FileProvider (`share_download_paths.xml`:
+  internal cache + external `Download/`) covers, with no storage permission. view-shot's own
+  `tmpfile` can land in the *external* cache, which that provider doesn't cover.
+  `failOnCancel: false` keeps a dismissed sheet from triggering the text-only fallback.
+- iOS needs `pod install` for both libraries (never run — no macOS here).
 
 ## UI architecture
 

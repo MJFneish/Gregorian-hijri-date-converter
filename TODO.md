@@ -52,7 +52,11 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
       working; launch log free of warnings/errors. Fixed along the way: Today card gradient
       overflow, nested-VirtualizedList error, two library warnings (patch-package), square tab
       pill, invisible dark-mode switch, onboarding slide-3 landscape edge, "AH" wrapping alone
-- [ ] Physical phone run (release APK) + copy/share sheet on a real device
+- [x] **Emulator run of the 1.1.0 release APK** (Pixel 4a, API 31, all-ABI build, 2026-10-26):
+      onboarding skip, Home, convert, copy (toast) and share (sheet + Messages) in EN/light and
+      AR/dark — see Phases 6 and 7
+- [ ] Physical phone run (release APK) + copy/share sheet on a real device — no phone was
+      connected on 2026-10-26; the emulator pass above covers the same flows
 - [ ] iOS build (needs macOS — not possible from this Windows machine; `pod install` never run)
 
 ## Phase 6 — Moon phase on the converter result (user request, 2026-10-23)
@@ -63,8 +67,23 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
 - [x] Result card: night panel with the date larger (28 → 34) and the moon row (phase, % lit, age);
       skeleton reshaped to match; EN/AR strings; NASA credit in Settings → About
 - [x] `moon.test.ts` written (vs astronomy-engine, eclipses, a distinct moon every day of 132 Hijri months)
-- [ ] Run `yarn test` / `yarn typecheck` / `yarn lint` (not run — waiting for the user's go-ahead)
-- [ ] Look at it on the emulator (light + dark, EN + AR, a crescent, a quarter, a full moon)
+- [x] `yarn test` 174/174 (moon suite included), `yarn typecheck` clean, `yarn lint` 0 errors
+      (fixed: `Buffer` undefined in generate-moon.js; 2 new inline-style warnings) — 2026-10-26
+- [x] Emulator (release APK): crescent 12 Oct (4%, 2.0 d), first quarter 18 Oct (50%, 8.0 d),
+      full 26 Oct (100%, 16.0 d), last quarter 1 Nov in AR/dark (٥٣٪, ٢٢٫٠), waning gibbous
+      26 Dec (90%, 17.6 d) — every number matches astronomy-engine at Beirut Maghrib; lit side
+      right when waxing / left when waning; RTL mirrors the moon row
+
+## Phase 7 — Share the result as an image (user request, 2026-10-23)
+- [x] `ResultPanel` extracted (night panel + moon), reused by the on-screen card and `ShareCard`
+- [x] `ShareCard` (app header, result card, method footer) kept mounted off-screen; Share captures
+      it (`react-native-view-shot`) and sends it with the caption (`react-native-share`); falls
+      back to text-only if the image fails
+- [x] Native rebuild + emulator (2026-10-26): the shared JPEG (pulled from the app's cache) is the
+      full card, 990×1375 px, in AR/dark; the sheet previews it in EN/light; Messages receives the
+      image + caption. Fixed on the way: capture was a 360×48 dp strip (0×0 clipped stage → now
+      parked off-screen); stale "busy" for TalkBack on Convert/Share (explicit labels)
+- [ ] WhatsApp / Telegram / save to gallery on a real phone (not installed on the emulator)
 
 ## Ideas / not built (ask the user before building)
 - Today's moon on the Today card too (MoonDisc is reusable; the crescent watermark could become it)

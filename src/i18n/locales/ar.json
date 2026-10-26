@@ -72,6 +72,8 @@
     "share": "مشاركة",
     "copied": "تم النسخ",
     "shareFooter": "({{method}}) — محوّل التاريخ",
+    "shareHint": "يشارك النتيجة كصورة",
+    "shareMethod": "طريقة الحساب: {{method}}",
     "convertButton": "تحويل",
     "converting": "جارٍ التحويل…",
     "convertHint": "يحوّل التاريخ المختار وينتقل إلى النتيجة",

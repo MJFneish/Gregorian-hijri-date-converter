@@ -1,32 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Share, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
+import Share from 'react-native-share';
+import { captureRef } from 'react-native-view-shot';
 import { ArrowDown, ArrowLeftRight, CalendarCheck2, Copy, Info, Moon, Share2, Sun } from 'lucide-react-native';
 
 import { gregorianToJdn, jdnToGregorian, todayJdn } from '../../core/calendar';
-import { formatDecimal, formatGregorian, formatHijri, formatPercent } from '../../core/format';
+import { formatGregorian, formatHijri } from '../../core/format';
 import { hijriOfJdn, jdnOfHijri, weekdayName } from '../../core/hijri';
-import { illuminationPercent, moonPhaseOnDay } from '../../core/moon';
+import { moonPhaseOnDay } from '../../core/moon';
 import { dayInfo } from '../../core/today';
 import { useConversionOptions } from '../../hooks/useConversionOptions';
 import { useDirection } from '../../hooks/useDirection';
-import { brand } from '../../theme/colors';
 import { useTheme } from '../../theme/useTheme';
 import { radius, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { OccasionBadge, SourceBadge } from '../badges';
-import { MOON_SIZE, MoonDisc, moonGlowMargin } from '../moon/MoonDisc';
 import { DateWheels, type Ymd } from '../picker/DateWheels';
 import { Card } from '../ui/Card';
-import { GradientFill } from '../ui/GradientFill';
 import { PressableScale } from '../ui/PressableScale';
 import { SectionLabel } from '../ui/SectionLabel';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { showToast } from '../Toast';
 import { useHomeScroll, type ViewRef } from './HomeScrollContext';
+import { ResultPanel } from './ResultPanel';
 import { ResultSkeleton } from './ResultSkeleton';
+import { ShareCard } from './ShareCard';
 
 type Direction = 'toHijri' | 'toGregorian';
 
@@ -42,15 +43,7 @@ interface Conversion {
  * scroll to the result finish first. */
 const MIN_CONVERTING_MS = 550;
 
-const MOON_GLOW = moonGlowMargin(MOON_SIZE);
-/** Faint stars on the result's night panel, kept off the moon's side of the moon row. */
-const SKY_STARS = [
-  [0.9, 0.08, 1.2, 0.6],
-  [0.72, 0.16, 0.9, 0.4],
-  [0.95, 0.34, 1, 0.45],
-  [0.56, 0.05, 0.8, 0.35],
-  [0.86, 0.62, 0.9, 0.4],
-] as const;
+const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /**
  * The converter. The wheels edit a *draft* (a JDN — one day on the shared timeline — plus the
@@ -65,7 +58,7 @@ const SKY_STARS = [
 export function ConverterSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { rowDirection, textAlign, lang, isRTL } = useDirection();
+  const { rowDirection, textAlign, lang } = useDirection();
   const opts = useConversionOptions();
   const { scrollToView } = useHomeScroll();
 
@@ -73,7 +66,9 @@ export function ConverterSection() {
   const [draftJdn, setDraftJdn] = useState(() => todayJdn());
   const [applied, setApplied] = useState<Conversion>(() => ({ jdn: todayJdn(), direction: 'toHijri', run: 0 }));
   const [converting, setConverting] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const resultRef = useRef<ViewRef>(null);
+  const shareCardRef = useRef<ViewRef>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -110,21 +105,53 @@ export function ConverterSection() {
   const resultText = outputIsGregorian ? gregorianText : hijriText;
   const inputText = outputIsGregorian ? hijriText : gregorianText;
   const sentence = `${weekday}${lang === 'ar' ? '، ' : ', '}${inputText} = ${resultText}`;
+  const resultLabel = outputIsGregorian ? t('home.resultGregorian') : t('home.resultHijri');
+  const detail = `${weekday} · ${inputText}`;
 
   // The real Moon that evening — depends on the day only, not on the method/adjustment.
   const moon = useMemo(() => moonPhaseOnDay(applied.jdn), [applied.jdn]);
-  const moonName = t(`moon.phase.${moon.name}`);
-  const moonIllumination = t('moon.illumination', { percent: formatPercent(illuminationPercent(moon), lang) });
-  const moonAge = t('moon.age', { days: formatDecimal(moon.age, lang) });
 
   const copy = () => {
     Clipboard.setString(sentence);
     showToast(t('home.copied'));
   };
-  const share = () => {
-    Share.share({ message: `${sentence}\n${t('home.shareFooter', { method: t(`methods.${opts.method}.name`) })}` }).catch(
-      () => {},
-    );
+
+  /**
+   * Shares the result as an image of the card (ShareCard), with the sentence as its caption. The
+   * capture is a data URI that react-native-share writes to the app's *internal* cache
+   * (`useInternalStorage`): its FileProvider covers that, needs no storage permission, whereas
+   * view-shot's own temp file can land in the external cache, which the provider doesn't cover.
+   * If the image can't be made or shared, it falls back to the text alone (the old behaviour).
+   *
+   * "Busy" covers the capture only; the sheet's promise isn't awaited, so the button never waits
+   * on whatever the receiving app (or a dismissed sheet) reports back.
+   */
+  const share = async () => {
+    if (sharing) return;
+    setSharing(true);
+    let image: string | null = null;
+    try {
+      image = await captureRef(shareCardRef, { format: 'jpg', quality: 0.95, result: 'data-uri' });
+    } catch {
+      image = null;
+    } finally {
+      setSharing(false);
+    }
+    const message = `${sentence}\n${t('home.shareFooter', { method: t(`methods.${opts.method}.name`) })}`;
+    // failOnCancel: false — dismissing the sheet isn't an error (and mustn't trigger the fallback).
+    const textOnly = { message, title: t('home.share'), failOnCancel: false };
+    if (!image) {
+      Share.open(textOnly).catch(() => {});
+      return;
+    }
+    const { year, month, day } = info.gregorian;
+    Share.open({
+      ...textOnly,
+      url: image,
+      type: 'image/jpeg',
+      filename: `HijriConverter-${year}-${pad2(month)}-${pad2(day)}`,
+      useInternalStorage: true,
+    }).catch(() => Share.open(textOnly).catch(() => {}));
   };
 
   return (
@@ -169,6 +196,9 @@ export function ConverterSection() {
             containerStyle={styles.convertBox}
             style={[styles.button, { backgroundColor: colors.primary, flexDirection: rowDirection }]}
             accessibilityRole="button"
+            // An explicit label: without one, RN Android never clears the "busy" it adds to the
+            // content description, so TalkBack kept saying "busy" after the first conversion.
+            accessibilityLabel={t('home.convertButton')}
             accessibilityState={{ disabled: converting, busy: converting }}
             accessibilityHint={t('home.convertHint')}
           >
@@ -205,41 +235,7 @@ export function ConverterSection() {
                   </Text>
                 </View>
               )}
-              {/* Night panel: the date, large, over the Moon as it looks that evening. Always dark
-                  (both themes) — the moon only reads as real against a night sky. */}
-              <View style={[styles.sky, { backgroundColor: brand.night }]}>
-                <GradientFill id="resultSky" from={brand.night} to={colors.heroFrom} stars={SKY_STARS} />
-                <Text style={[typography.label, { color: colors.onHeroMuted, textAlign, letterSpacing: isRTL ? 0 : 1 }]}>
-                  {outputIsGregorian ? t('home.resultGregorian') : t('home.resultHijri')}
-                </Text>
-                <Text
-                  style={[typography.displayLarge, { color: colors.onHero, textAlign, marginTop: spacing.xs }]}
-                  accessibilityLiveRegion="polite"
-                  selectable
-                >
-                  {resultText}
-                </Text>
-                <Text style={[typography.body, { color: colors.onHeroMuted, textAlign }]}>
-                  {weekday} · {inputText}
-                </Text>
-                <View style={styles.skyDivider} />
-                <View
-                  style={[styles.moonRow, { flexDirection: rowDirection }]}
-                  accessible
-                  accessibilityLabel={`${moonName}, ${moonIllumination}, ${moonAge}`}
-                >
-                  {/* Negative margin: the glow spills into the padding; the disc itself lines up
-                      with the text above and sets the row's height. */}
-                  <View style={styles.moonGlowBox}>
-                    <MoonDisc phase={moon} size={MOON_SIZE} />
-                  </View>
-                  <View style={styles.moonText}>
-                    <Text style={[typography.subtitle, { color: colors.heroGold, textAlign }]}>{moonName}</Text>
-                    <Text style={[typography.body, { color: colors.onHero, textAlign }]}>{moonIllumination}</Text>
-                    <Text style={[typography.caption, { color: colors.onHeroMuted, textAlign }]}>{moonAge}</Text>
-                  </View>
-                </View>
-              </View>
+              <ResultPanel id="result" label={resultLabel} date={resultText} detail={detail} moon={moon} interactive />
               <View style={styles.source}>
                 <SourceBadge source={info.source} />
               </View>
@@ -262,17 +258,46 @@ export function ConverterSection() {
                 </PressableScale>
                 <PressableScale
                   onPress={share}
+                  disabled={sharing}
+                  dimWhenDisabled={false}
                   containerStyle={styles.actionBox}
                   style={[styles.button, { backgroundColor: colors.primary, flexDirection: rowDirection }]}
                   accessibilityRole="button"
+                  accessibilityLabel={t('home.share')} // see the Convert button
+                  accessibilityState={{ disabled: sharing, busy: sharing }}
+                  accessibilityHint={t('home.shareHint')}
                 >
-                  <Share2 size={18} color={colors.onPrimary} />
+                  {sharing ? (
+                    <ActivityIndicator size="small" color={colors.onPrimary} />
+                  ) : (
+                    <Share2 size={18} color={colors.onPrimary} />
+                  )}
                   <Text style={[typography.bodyStrong, { color: colors.onPrimary }]}>{t('home.share')}</Text>
                 </PressableScale>
               </View>
             </Animated.View>
           )}
         </Card>
+      </View>
+
+      {/* The share image's source. Never visible: parked far off-screen, laid out at full size
+          with its moon photo loaded, so Share can capture it at once. Not a clipped 0×0 box — Yoga
+          measured the card's content against that zero height and captured a 360×48 dp strip. */}
+      <View
+        style={styles.shareStage}
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
+        <ShareCard
+          ref={shareCardRef}
+          info={info}
+          label={resultLabel}
+          date={resultText}
+          detail={detail}
+          moon={moon}
+          method={opts.method}
+        />
       </View>
     </>
   );
@@ -309,21 +334,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   staleText: { flex: 1 },
-  sky: {
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    overflow: 'hidden',
-  },
-  skyDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    marginVertical: spacing.md,
-  },
-  moonRow: { alignItems: 'center', gap: spacing.lg },
-  moonGlowBox: { margin: -MOON_GLOW },
-  moonText: { flex: 1, gap: 2 },
   source: { marginTop: spacing.md },
   occasions: { marginTop: spacing.md, gap: spacing.sm },
   actions: { gap: spacing.md, marginTop: spacing.lg },
   actionBox: { flex: 1 },
+  shareStage: { position: 'absolute', top: 0, left: -10000 },
 });

@@ -72,6 +72,8 @@
     "share": "Share",
     "copied": "Copied",
     "shareFooter": "({{method}}) — Hijri Converter",
+    "shareHint": "Shares the result as an image",
+    "shareMethod": "Calculation method: {{method}}",
     "convertButton": "Convert",
     "converting": "Converting…",
     "convertHint": "Converts the picked date and scrolls to the result",

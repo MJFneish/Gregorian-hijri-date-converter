@@ -14,6 +14,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { Buffer } = require('buffer');
 const sharp = require('sharp');
 
 const root = path.resolve(__dirname, '..');

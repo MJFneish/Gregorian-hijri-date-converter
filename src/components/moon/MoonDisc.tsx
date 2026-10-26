@@ -114,7 +114,7 @@ export function MoonDisc({ phase, size = MOON_SIZE, id = 'moonGlow' }: Props) {
       <Image
         source={TEXTURE}
         fadeDuration={0}
-        style={{ position: 'absolute', left: margin, top: margin, width: size, height: size }}
+        style={[styles.texture, { left: margin, top: margin, width: size, height: size }]}
       />
       <Svg width={box} height={box} style={StyleSheet.absoluteFill}>
         {SHADE_LAYERS.map(({ offset, opacity }) => {
@@ -125,3 +125,7 @@ export function MoonDisc({ phase, size = MOON_SIZE, id = 'moonGlow' }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  texture: { position: 'absolute' },
+});
