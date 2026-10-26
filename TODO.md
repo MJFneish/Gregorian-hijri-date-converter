@@ -85,9 +85,22 @@ for a fresh Claude session (or the human) to see what's real vs planned. If it d
       parked off-screen); stale "busy" for TalkBack on Convert/Share (explicit labels)
 - [ ] WhatsApp / Telegram / save to gallery on a real phone (not installed on the emulator)
 
+## Phase 8 — Tools tab + new features (user request, 2026-10-26)
+Per feature: build → test (jest/typecheck/lint + emulator) → commit + push → minor bump →
+commit + push → GitHub release; one APK build at the very end.
+- [x] v1.3.0 — 3 tabs (Converter · Tools · Settings), Home = Today + converter only (no app
+      header), `PageScreen` tool pages, Days between moved to Tools, share image without header
+- [ ] v1.4.0 — Tonight's moon on the Today card
+- [ ] v1.5.0 — Compare offices (one date under every method)
+- [ ] v1.6.0 — Occasions list with countdowns, each shareable as an image
+- [ ] v1.7.0 — Hijri birthday (next Hijri birthday + age in Hijri years)
+- [ ] v1.8.0 — Recommended fasting days (list only — no notifications, user's choice)
+- [ ] v1.9.0 — Crescent forecast (visibility around the next month start)
+- [ ] v1.10.0 — Month-start updates without a new APK (JSON in the GitHub repo)
+
 ## Ideas / not built (ask the user before building)
-- Today's moon on the Today card too (MoonDisc is reusable; the crescent watermark could become it)
-- Month calendar grid (Hijri month view with both dates per day, occasions highlighted)
+- ~~Month calendar grid~~ — declined: the app is a converter, not a calendar (2026-10-26)
+- Occasion reminders / notifications — declined for now (fasting list is list-only)
 - Home-screen widget (today's Hijri date + eve state), like prayer-times-lb's
 - GPS-based Maghrib for the eve hint (currently Beirut, no permission)
 - Downloadable month-start overrides (e.g. after a new Iranian / Fadlallah announcement) — today it's a rebuild

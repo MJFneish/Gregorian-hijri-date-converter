@@ -8,14 +8,24 @@
   },
   "tabs": {
     "home": "Converter",
+    "tools": "Tools",
     "settings": "Settings"
+  },
+  "tools": {
+    "title": "Tools",
+    "subtitle": "More ways to work with dates, each on its own page.",
+    "daysBetween": {
+      "title": "Days between",
+      "description": "Count the days, months and years between two dates."
+    }
   },
   "common": {
     "close": "Close",
     "cancel": "Cancel",
     "done": "Done",
     "hijri": "Hijri",
-    "gregorian": "Gregorian"
+    "gregorian": "Gregorian",
+    "back": "Back"
   },
   "picker": {
     "day": "Day",

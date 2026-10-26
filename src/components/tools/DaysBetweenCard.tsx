@@ -16,13 +16,13 @@ import { DatePickerSheet } from '../picker/DatePickerSheet';
 import type { CalendarKind, Ymd } from '../picker/DateWheels';
 import { Card } from '../ui/Card';
 import { PressableScale } from '../ui/PressableScale';
-import { SectionLabel } from '../ui/SectionLabel';
 import { SegmentedControl } from '../ui/SegmentedControl';
 
 type Field = 'from' | 'to';
 
 /** Days between two dates, plus the same span in years/months/days of the chosen calendar —
- * handy for ages in Hijri years. Defaults to "since 1 Muharram of this Hijri year". */
+ * handy for ages in Hijri years. Defaults to "since 1 Muharram of this Hijri year". Lives on its
+ * own page (Tools → Days between) since Home was slimmed down. */
 export function DaysBetweenCard() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -80,7 +80,6 @@ export function DaysBetweenCard() {
 
   return (
     <>
-      <SectionLabel>{t('between.title')}</SectionLabel>
       <Card>
         <SegmentedControl<CalendarKind>
           value={calendar}

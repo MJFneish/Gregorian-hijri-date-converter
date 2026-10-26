@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { CalendarRange, Settings2, type LucideIcon } from 'lucide-react-native';
+import { CalendarRange, LayoutGrid, Settings2, type LucideIcon } from 'lucide-react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ToolsScreen from '../screens/ToolsScreen';
 import { useDirection } from '../hooks/useDirection';
 import { useTheme } from '../theme/useTheme';
 import { spacing } from '../theme/spacing';
@@ -17,8 +18,9 @@ import { TabPagerContext } from './TabPagerContext';
 
 const PAGES: Array<{ key: string; Component: React.ComponentType; Icon: LucideIcon; labelKey: string }> = [
   { key: 'home', Component: HomeScreen, Icon: CalendarRange, labelKey: 'tabs.home' },
+  { key: 'tools', Component: ToolsScreen, Icon: LayoutGrid, labelKey: 'tabs.tools' },
   { key: 'settings', Component: SettingsScreen, Icon: Settings2, labelKey: 'tabs.settings' },
-];
+]; // order must match TAB_INDEX (TabPagerContext)
 
 const FLING_VELOCITY = 600;
 const SNAP_DURATION = 240;

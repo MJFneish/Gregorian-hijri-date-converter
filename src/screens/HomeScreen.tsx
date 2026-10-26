@@ -1,28 +1,24 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { AppLogo } from '../components/brand/AppLogo';
 import { ConverterSection } from '../components/home/ConverterSection';
-import { DaysBetweenCard } from '../components/home/DaysBetweenCard';
 import { HomeScrollContext, type ViewRef } from '../components/home/HomeScrollContext';
 import { TodayCard } from '../components/home/TodayCard';
-import { useDirection } from '../hooks/useDirection';
-import { useTabPager } from '../navigation/TabPagerContext';
+import { TAB_INDEX, useTabPager } from '../navigation/TabPagerContext';
 import { useTheme } from '../theme/useTheme';
 import { spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
 
-const SETTINGS_TAB = 1;
 /** Breathing room left above a section we scroll to. */
 const SCROLL_TOP_MARGIN = spacing.md;
 
+/**
+ * Home = the Today card and the converter, nothing else (user request, 2026-10-26: no app
+ * name/icon header, and every other feature lives on its own page under the Tools tab).
+ */
 export default function HomeScreen() {
-  const { t } = useTranslation();
   const { colors } = useTheme();
-  const { rowDirection, textAlign } = useDirection();
   const { goToTab } = useTabPager();
 
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
@@ -44,26 +40,12 @@ export default function HomeScreen() {
       <HomeScrollContext.Provider value={scrollContext}>
         <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
           <View ref={contentRef} style={styles.content}>
-            <Animated.View entering={FadeInDown.duration(380)} style={[styles.header, { flexDirection: rowDirection }]}>
-              <AppLogo size={44} tile />
-              <View style={styles.headerText}>
-                <Text style={[typography.title, { color: colors.text, textAlign }]} accessibilityRole="header">
-                  {t('app.name')}
-                </Text>
-                <Text style={[typography.caption, { color: colors.textMuted, textAlign }]}>{t('home.subtitle')}</Text>
-              </View>
+            <Animated.View entering={FadeInDown.duration(420)}>
+              <TodayCard onPressMethod={() => goToTab(TAB_INDEX.settings)} />
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(60).duration(420)}>
-              <TodayCard onPressMethod={() => goToTab(SETTINGS_TAB)} />
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(120).duration(420)}>
+            <Animated.View entering={FadeInDown.delay(80).duration(420)}>
               <ConverterSection />
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(180).duration(420)}>
-              <DaysBetweenCard />
             </Animated.View>
           </View>
         </ScrollView>
@@ -79,10 +61,4 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xxxl,
   },
-  header: {
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  headerText: { flex: 1 },
 });

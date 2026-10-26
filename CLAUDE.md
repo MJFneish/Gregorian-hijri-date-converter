@@ -168,7 +168,17 @@ default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hij
   all pages side by side, the row live-translates with the finger, snaps on release/fling.
   `failOffsetY` keeps vertical drags (scrolling, wheels) from starting a tab swipe. **In Arabic the
   row and the tab bar mirror together** (first tab on the right) — lexitoon proved that mirroring
-  only one of them feels inconsistent. Screens reach tabs via `useTabPager().goToTab()`.
+  only one of them feels inconsistent. Screens reach tabs via `useTabPager().goToTab(TAB_INDEX.x)`.
+- **Three tabs: Converter · Tools · Settings** (user request, 2026-10-26: "the app is a
+  converter, not a calendar", and Home had grown too long). **Home = the Today card + the
+  converter only** — no app name/icon header. Everything else is a page under
+  [`ToolsScreen`](./src/screens/ToolsScreen.tsx): one row per tool from its `TOOLS` registry,
+  opening a root-stack screen in [`src/screens/tools/`](./src/screens/tools/) built on
+  [`PageScreen`](./src/components/ui/PageScreen.tsx) (back button mirrored in Arabic, title,
+  subtitle, scrolling body). Tool pages slide in from the right in English and from the left in
+  Arabic (`RootNavigator`'s `toolPage` options — native RTL is off, so the stack doesn't mirror
+  itself). Adding a tool = screen + route in `navigation/types.ts` + `RootNavigator` + a `TOOLS`
+  entry + `tools.<key>.title/description` strings. Days-between moved there first.
 - **Wheel picker** ([`WheelPicker.tsx`](./src/components/picker/WheelPicker.tsx)): native date
   pickers can't show Hijri months. A **plain ScrollView, not a FlatList** — the wheels sit inside
   the Home screen's vertical ScrollView, and a same-direction VirtualizedList nested there
