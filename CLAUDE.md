@@ -241,6 +241,9 @@ golden test asserts the example under `fadlallah`. To make the example hold by d
   from a `GeometryReader` and `.clipped()` — `containerRelativeFrame` pages made the tab view taller
   than the screen. Switching language mirrors the pager but keeps its offset, so `RootView`
   scrolls back to the current tab on `isRtl` changes.
+- Compose: no negative `letterSpacing` on right-to-left text (Arabic, or digits under the Arabic
+  layout direction) — it's measured too narrow and wraps/drops the last glyph; use
+  `Type.displayLargeRtl` in Arabic.
 - iOS: `Text("…\(x)…")` / `.accessibilityLabel("…\(x)…")` with a literal become `LocalizedStringKey`,
   which wraps each value in bidi isolates in Arabic — use `Text(verbatim:)` or a `String`.
 - iOS: side-by-side wheel Pickers steal each other's touches without the `UIPickerView`
