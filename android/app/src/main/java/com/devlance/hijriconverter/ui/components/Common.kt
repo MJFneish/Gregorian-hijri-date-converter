@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -44,7 +43,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -285,14 +283,6 @@ fun Modifier.heroGradient(from: Color, to: Color, stars: List<Star> = emptyList(
 }
 
 data class Star(val x: Float, val y: Float, val radius: Float, val opacity: Float)
-
-@Composable
-fun CenteredNote(text: String, modifier: Modifier = Modifier) {
-  val theme = appTheme()
-  Box(modifier.fillMaxWidth().fillMaxHeight(), contentAlignment = Alignment.Center) {
-    Text(text, style = Type.body, color = theme.colors.textMuted, textAlign = TextAlign.Center, modifier = Modifier.padding(Spacing.xl))
-  }
-}
 
 /**
  * v1's negative margins: the content keeps its full size and draws over its neighbours, but takes

@@ -31,7 +31,7 @@ struct DateField: View {
       }
       .buttonStyle(PressDimStyle())
       .accessibilityElement(children: .ignore)
-      .accessibilityLabel("\(label): \(value)")
+      .accessibilityLabel(label + ": " + value)
       .accessibilityHint(s["between.tapToChange"])
       .accessibilityAddTraits(.isButton)
       .accessibilityIdentifier(id)
@@ -342,7 +342,7 @@ struct OccasionsView: View {
       IconBadge(icon: style.icon, tint: style.fg, background: style.bg)
       VStack(alignment: .leading, spacing: 2) {
         Text(name).font(Typo.bodyStrong).foregroundStyle(c.text)
-        Text("\(formatHijri(u.day.hijri, lang)) · \(weekdayName(u.day.weekday, lang)) \(formatGregorian(u.day.gregorian, lang))")
+        Text(verbatim: "\(formatHijri(u.day.hijri, lang)) · \(weekdayName(u.day.weekday, lang)) \(formatGregorian(u.day.gregorian, lang))")
           .font(Typo.caption)
           .foregroundStyle(c.textMuted)
         Tag(text: countdown, color: soon ? c.onPrimary : c.primary, background: soon ? c.primary : c.primarySoft)
@@ -478,7 +478,7 @@ struct DaysBetweenView: View {
           Text(s["between.daysLabel"]).font(Typo.bodyStrong).foregroundStyle(c.text)
           Text(spanPhrase(span, lang)).font(Typo.body).foregroundStyle(c.text).padding(.top, Spacing.sm)
           if let weeksText {
-            Text("≈ \(weeksText)").font(Typo.caption).foregroundStyle(c.textMuted)
+            Text(verbatim: "≈ \(weeksText)").font(Typo.caption).foregroundStyle(c.textMuted)
           }
           if from > toJdn {
             Text(s["between.reversed"]).font(Typo.caption).foregroundStyle(c.textMuted).padding(.top, Spacing.xs)

@@ -21,11 +21,11 @@ released on GitHub. One APK at the end of the round.
 - [x] Phase 4 — Converter on both: Today card (tonight's moon, eve hint, next occasion), wheels,
       draft + Convert, result with the moon, copy, share as image (Android: Compose snapping
       wheels, share via an off-screen graphics layer; iOS: native wheel pickers, ImageRenderer +
-      share sheet)
+      share sheet) (alpha.5)
 - [x] Phase 5 — Tools on both: compare offices, occasions (+ share), days between (shared
-      DateField + date-picker sheet)
+      DateField + date-picker sheet) (alpha.6)
 - [x] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast (computed off
-      the main thread)
+      the main thread) (alpha.7)
 - [ ] Phase 7 — final parity check on both, docs, 2.0.0, release APK
 
 ## Not done / out of reach here

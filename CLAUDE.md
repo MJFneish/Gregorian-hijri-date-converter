@@ -39,7 +39,10 @@ See [`TODO.md`](./TODO.md) for the phased checklist (source of truth for "what's
 - `app/src/main/java/com/devlance/hijriconverter/`:
   `core/` (the engine — pure Kotlin, unit-tested on the JVM), `data/` (settings, v1 migration,
   month-table updates), `i18n/` (`Strings`, `Plural`), `ui/` (Compose: `AppRoot` navigation,
-  `theme/`, `components/`, `brand/`, `onboarding/`, `screens/`).
+  `theme/`, `components/`, `brand/`, `onboarding/`, `screens/` (the three tabs), `home/` (Today
+  card, converter, result card, share card), `picker/` (wheels + date-picker sheet), `moon/`
+  (`MoonDisc`), `share/` (`ShareHost`: off-screen capture → JPEG → share sheet), `tools/` (one
+  screen per tool)).
 - **Updating over v1 must keep working:** same application id `com.devlance.hijriconverter`, same
   signing key (`app/debug.keystore` — the RN template key every v1 release carries), same launcher
   activity name (`.MainActivity`). On first launch `data/LegacyMigration.kt` imports v1's settings
@@ -66,6 +69,13 @@ See [`TODO.md`](./TODO.md) for the phased checklist (source of truth for "what's
   CURRENT_PROJECT_VERSION, kept equal to `android/version.properties` by `yarn bump`.
 - Strings: the same i18n JSON files (`HijriCore/Sources/HijriCore/Resources/i18n/`); CI checks the
   Android and iOS copies are identical. RTL via `\.layoutDirection` from the app language.
+- App views in `HijriConverter/Views/`: `RootView` (routes, tab pager, `Navigator`), `HomeView`
+  (Today card, converter, result/share cards), `DateWheels` (native wheel pickers + `WeightedRow`),
+  `MoonDisc`, `Share` (`ImageRenderer` → JPEG → `UIActivityViewController`), `ToolScreens` (date
+  field + picker sheet, Compare offices, Occasions, Days between), `PersonalTools` (Hijri birthday,
+  Fasting days, Crescent forecast), `SettingsView`, `OnboardingView`, `Components`.
+- UI tests (`HijriConverterUITests/SmokeTests.swift`) drive every screen and save numbered
+  screenshots (CI artifact `ios-screenshots`): `gh run download <run> -n ios-screenshots`.
 
 ### Tooling (`android/package.json`, Yarn 1 only — never npm)
 
@@ -202,7 +212,8 @@ golden test asserts the example under `fadlallah`. To make the example hold by d
   turn.** The wheels edit a draft (a JDN + direction); Convert scrolls to the result, shows a
   skeleton + "Converting…" for 550 ms, then applies. The result always shows the last *applied*
   conversion with a "showing the previous result" note when the wheels moved since.
-- Wheel pickers (native date pickers can't show Hijri months): 44 dp rows, 5 visible, snapping.
+- Wheel pickers (native date pickers can't show Hijri months): 44 dp rows, 5 visible, snapping
+  (Android: our Compose `WheelPicker`; iOS: native `.pickerStyle(.wheel)` Pickers).
 - Tabs: a pager that follows the finger; **in Arabic the pages and the tab bar mirror together**.
   Tool pages slide in from the reading direction's end.
 - Loading: the system splash (night `#110D2E`, 120 dp emblem) hands off to an animated loading
@@ -223,7 +234,18 @@ golden test asserts the example under `fadlallah`. To make the example hold by d
 
 - **Android regex is ICU**: `\d` matches all Unicode digits (Arabic-Indic too) and `(?U)` throws —
   JVM tests pass either way. Use explicit `[0-9]`.
-- Android draws elevation before zIndex — overlapping elements need a higher elevation.
+- Overlaps (the converter's arrow bubble, Days-between swap, a moon's glow): Compose
+  `Modifier.negativeMargin` + `zIndex` among siblings of one parent; SwiftUI negative `.padding` +
+  `.zIndex`. (v1/RN Android drew elevation before zIndex — not an issue in Compose.)
+- **iOS tab pager**: the pages sit in a non-lazy `HStack` (so the converter keeps its state) sized
+  from a `GeometryReader` and `.clipped()` — `containerRelativeFrame` pages made the tab view taller
+  than the screen. Switching language mirrors the pager but keeps its offset, so `RootView`
+  scrolls back to the current tab on `isRtl` changes.
+- iOS: `Text("…\(x)…")` / `.accessibilityLabel("…\(x)…")` with a literal become `LocalizedStringKey`,
+  which wraps each value in bidi isolates in Arabic — use `Text(verbatim:)` or a `String`.
+- iOS: side-by-side wheel Pickers steal each other's touches without the `UIPickerView`
+  `intrinsicContentSize` override in `DateWheels.swift`. The first share sheet on a fresh CI
+  simulator takes several seconds to appear.
 - Windows: a shell whose working directory is inside a folder keeps it from being renamed/deleted.
 - Emulators are shared with other Claude sessions: always `adb -s <serial>`, never `adb kill-server`.
   This project uses AVD **Pixel_7** on port **5560** (`emulator -avd Pixel_7 -port 5560`).

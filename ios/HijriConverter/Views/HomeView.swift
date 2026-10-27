@@ -81,7 +81,7 @@ struct TodayCard: View {
     let shape = RoundedRectangle(cornerRadius: Radius.xl, style: .continuous)
     return VStack(alignment: .leading, spacing: 0) {
       HStack(spacing: Spacing.sm) {
-        Text("\(s["home.today"]) · \(weekdayName(today.weekday, lang))")
+        Text(verbatim: "\(s["home.today"]) · \(weekdayName(today.weekday, lang))")
           .font(Typo.label)
           .kerning(theme.isRtl ? 0 : 1)
           .foregroundStyle(c.onHeroMuted)
