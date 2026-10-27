@@ -131,7 +131,10 @@ object Brand {
  * bundled Latin display face wouldn't. Body text stays >= 16 for readability.
  */
 object Type {
+  /** Tightened for Latin only: Compose measures right-to-left text with negative letter spacing too
+   * narrow (it wraps early or drops the last glyph), so Arabic uses [displayLargeRtl]. */
   val displayLarge = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.4).sp)
+  val displayLargeRtl = displayLarge.copy(letterSpacing = 0.sp)
   val displayMedium = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold)
   val title = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
   val subtitle = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.SemiBold)

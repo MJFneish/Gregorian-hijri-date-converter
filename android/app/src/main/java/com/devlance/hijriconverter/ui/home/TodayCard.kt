@@ -119,7 +119,7 @@ fun TodayCard(onPressMethod: () -> Unit) {
 
     Text(
       formatHijri(today.hijri, lang),
-      style = Type.displayLarge,
+      style = if (theme.isRtl) Type.displayLargeRtl else Type.displayLarge,
       color = c.onHero,
       modifier = Modifier.padding(bottom = 2.dp).semantics { heading() },
     )

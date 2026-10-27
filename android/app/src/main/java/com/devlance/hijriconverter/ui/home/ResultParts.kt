@@ -103,7 +103,7 @@ fun ResultPanel(label: String, date: String, detail: String, moon: MoonPhase, in
     val dateText = @Composable {
       Text(
         date,
-        style = Type.displayLarge,
+        style = if (theme.isRtl) Type.displayLargeRtl else Type.displayLarge,
         color = c.onHero,
         modifier = Modifier
           .padding(top = Spacing.xs)
