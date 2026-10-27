@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * Generates src/core/hijri/tables.generated.ts — precomputed Hijri month-start tables for every
- * calculation method the app offers, so the phone never runs astronomy code at runtime.
+ * Generates the precomputed Hijri month-start tables for every calculation method the app offers,
+ * so the phone never runs astronomy code to convert a date: the native app's
+ * native/app/src/main/java/com/devlance/hijriconverter/core/hijri/TablesGenerated.kt, v1's
+ * src/core/hijri/tables.generated.ts and the downloadable data/hijri-tables.json.
  *
  * Usage:
  *   node scripts/build-hijri-tables.js              -> regenerate the table file
@@ -38,8 +40,11 @@ const Astronomy = require('astronomy-engine');
 
 const root = path.resolve(__dirname, '..');
 const OUTPUT = path.join(root, 'src', 'core', 'hijri', 'tables.generated.ts');
+const KOTLIN_OUTPUT = path.join(root, 'native', 'app', 'src', 'main', 'java', 'com', 'devlance', 'hijriconverter', 'core', 'hijri', 'TablesGenerated.kt');
+/** Method id -> its `MethodId` enum entry in the native app. */
+const KOTLIN_METHOD = { iran: 'Iran', fadlallah: 'Fadlallah', sistani: 'Sistani', ummalqura: 'UmmAlQura' };
 // The same tables as JSON, published from the repo: installed apps download it to pick up new
-// month starts without a new APK (src/store/useTableStore.ts). Commit + push it after a rebuild.
+// month starts without a new APK (data/TableUpdates.kt). Commit + push it after a rebuild.
 const REMOTE_OUTPUT = path.join(root, 'data', 'hijri-tables.json');
 const QAMARI = path.join(__dirname, 'data', 'qamari-consolidated.txt');
 
@@ -401,10 +406,30 @@ export const METHOD_TABLES = ${JSON.stringify(methods, null, 2)} as const;
 `;
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, header + body);
+  const kotlin = `package com.devlance.hijriconverter.core.hijri
+
+${header}
+const val TABLE_FIRST_YEAR = ${FIRST_YEAR}
+const val TABLE_LAST_YEAR = ${LAST_YEAR}
+
+/** Last month whose Iran-official start comes from real published data (later ones are predicted). */
+val IRAN_LAST_OFFICIAL = YearMonth(${iranLastOfficial.year}, ${iranLastOfficial.month})
+
+/** When these tables were generated — compared with the downloadable copy (data/hijri-tables.json). */
+const val TABLES_GENERATED = "${generated}"
+
+val METHOD_TABLES: Map<MethodId, MethodTable> = mapOf(
+${Object.entries(methods)
+  .map(([id, m]) => `  MethodId.${KOTLIN_METHOD[id]} to MethodTable(\n    firstJdn = ${m.firstJdn},\n    lengths = "${m.lengths}",\n  ),`)
+  .join('\n')}
+)
+`;
+  fs.mkdirSync(path.dirname(KOTLIN_OUTPUT), { recursive: true });
+  fs.writeFileSync(KOTLIN_OUTPUT, kotlin);
   const remote = { format: 1, generated, firstYear: FIRST_YEAR, lastYear: LAST_YEAR, iranLastOfficial, methods };
   fs.mkdirSync(path.dirname(REMOTE_OUTPUT), { recursive: true });
   fs.writeFileSync(REMOTE_OUTPUT, JSON.stringify(remote, null, 2) + '\n');
-  console.log(`wrote ${path.relative(root, OUTPUT)} and ${path.relative(root, REMOTE_OUTPUT)} (generated ${generated}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+  console.log(`wrote ${path.relative(root, KOTLIN_OUTPUT)}, ${path.relative(root, OUTPUT)} and ${path.relative(root, REMOTE_OUTPUT)} (generated ${generated}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 
 main();

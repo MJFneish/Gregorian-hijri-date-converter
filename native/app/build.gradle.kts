@@ -72,6 +72,8 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.kotlinx.coroutines.android)
+  // Crescent forecast: the same astronomy library (and version) the month tables are built with.
+  implementation(libs.astronomy)
   implementation(platform(libs.compose.bom))
   implementation(libs.compose.ui)
   implementation(libs.compose.ui.graphics)
@@ -83,4 +85,6 @@ dependencies {
   testImplementation(libs.junit)
   // android.jar's org.json is a stub on the JVM; the real one for unit tests.
   testImplementation(libs.org.json)
+  // ICU's islamic-umalqura / islamic-civil calendars: the references v1's Jest tests used via Intl.
+  testImplementation(libs.icu4j)
 }
