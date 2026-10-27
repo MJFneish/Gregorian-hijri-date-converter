@@ -26,7 +26,8 @@ released on GitHub. One APK at the end of the round.
       DateField + date-picker sheet) (alpha.6)
 - [x] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast (computed off
       the main thread) (alpha.7)
-- [ ] Phase 7 — final parity check on both, docs, 2.0.0, release APK
+- [x] Phase 7 — final parity check on both, docs, 2.0.0, release APK (R8 release build checked on
+      the emulator: crescent maths, share, update check; installs over 1.10.0)
 
 ## Not done / out of reach here
 
