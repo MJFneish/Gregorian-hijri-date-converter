@@ -22,7 +22,8 @@ released on GitHub. One APK at the end of the round.
       draft + Convert, result with the moon, copy, share as image (Android: Compose snapping
       wheels, share via an off-screen graphics layer; iOS: native wheel pickers, ImageRenderer +
       share sheet)
-- [ ] Phase 5 — Tools on both: compare offices, occasions (+ share), days between
+- [x] Phase 5 — Tools on both: compare offices, occasions (+ share), days between (shared
+      DateField + date-picker sheet)
 - [ ] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast
 - [ ] Phase 7 — final parity check on both, docs, 2.0.0, release APK
 

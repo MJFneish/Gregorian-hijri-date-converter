@@ -130,4 +130,46 @@ final class SmokeTests: XCTestCase {
     settle(8) // the first share sheet on a fresh simulator is slow to appear
     save(app, "19-share-sheet")
   }
+
+  /// The tool pages (runs after testShell; screenshots continue its numbering).
+  func testTools() {
+    let app = launchFresh()
+    tap(app.buttons["onboarding.skip"], "skip")
+    settle(2)
+    tap(app.buttons["tab.1"], "tools tab")
+    settle()
+
+    tap(app.buttons["tool.compare"], "compare row")
+    settle()
+    save(app, "20-compare")
+    tap(app.buttons["compare.date"], "date field")
+    settle()
+    let year = app.pickerWheels.element(boundBy: 2)
+    XCTAssertTrue(year.waitForExistence(timeout: 5), "sheet year wheel not found")
+    year.adjust(toPickerWheelValue: "2002")
+    settle(0.5)
+    save(app, "21-compare-sheet")
+    tap(app.buttons["sheet.done"], "done")
+    settle()
+    save(app, "22-compare-2002")
+    tap(app.buttons["page.back"], "back")
+    settle()
+
+    tap(app.buttons["tool.occasions"], "occasions row")
+    settle()
+    save(app, "23-occasions")
+    tap(app.buttons["occasions.mourning"], "mourning filter")
+    settle()
+    save(app, "24-occasions-mourning")
+    tap(app.buttons["page.back"], "back")
+    settle()
+
+    tap(app.buttons["tool.daysBetween"], "days between row")
+    settle()
+    save(app, "25-days-between")
+    tap(app.buttons["between.swap"], "swap")
+    tap(app.buttons["between.gregorian"], "Gregorian")
+    settle()
+    save(app, "26-days-between-swapped")
+  }
 }

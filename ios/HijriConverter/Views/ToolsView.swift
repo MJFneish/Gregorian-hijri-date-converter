@@ -96,10 +96,16 @@ struct ToolPage: View {
   var body: some View {
     let s = theme.strings
     let key = toolKey(route) ?? "compare"
-    // Each tool is ported in its own pre-release; until then its page says so.
-    PageScreen(title: s["tools.\(key).title"], subtitle: s["tools.\(key).description"]) {
-      CenteredNote(text: "Coming in the next 2.0.0 pre-release.")
-        .padding(.top, Spacing.xxl)
+    switch route {
+    case let .compareOffices(jdn): CompareOfficesView(jdn: jdn)
+    case .occasions: OccasionsView()
+    case .daysBetween: DaysBetweenView()
+    default:
+      // Each tool is ported in its own pre-release; until then its page says so.
+      PageScreen(title: s["tools.\(key).title"], subtitle: s["tools.\(key).description"]) {
+        CenteredNote(text: "Coming in the next 2.0.0 pre-release.")
+          .padding(.top, Spacing.xxl)
+      }
     }
   }
 }
