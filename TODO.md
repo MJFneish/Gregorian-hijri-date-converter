@@ -24,7 +24,8 @@ released on GitHub. One APK at the end of the round.
       share sheet)
 - [x] Phase 5 — Tools on both: compare offices, occasions (+ share), days between (shared
       DateField + date-picker sheet)
-- [ ] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast
+- [x] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast (computed off
+      the main thread)
 - [ ] Phase 7 — final parity check on both, docs, 2.0.0, release APK
 
 ## Not done / out of reach here

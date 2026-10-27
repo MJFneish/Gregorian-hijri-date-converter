@@ -172,4 +172,38 @@ final class SmokeTests: XCTestCase {
     settle()
     save(app, "26-days-between-swapped")
   }
+
+  /// Hijri birthday, fasting days and the crescent forecast (screenshots continue the numbering).
+  func testToolsMore() {
+    let app = launchFresh()
+    tap(app.buttons["onboarding.skip"], "skip")
+    settle(2)
+    tap(app.buttons["tab.1"], "tools tab")
+    settle()
+
+    tap(app.buttons["tool.birthday"], "birthday row")
+    settle()
+    save(app, "30-birthday-empty")
+    tap(app.buttons["birthday.date"], "birth date field")
+    settle()
+    tap(app.buttons["sheet.done"], "done")
+    settle()
+    XCTAssertTrue(app.buttons["birthday.forget"].waitForExistence(timeout: 5), "birthday result not shown")
+    save(app, "31-birthday")
+    tap(app.buttons["page.back"], "back")
+    settle()
+
+    tap(app.buttons["tool.fasting"], "fasting row")
+    settle()
+    save(app, "32-fasting")
+    tap(app.buttons["page.back"], "back")
+    settle()
+
+    tap(app.buttons["tool.crescent"], "crescent row")
+    settle(3) // the forecast runs off the main thread
+    save(app, "33-crescent")
+    tap(app.buttons["crescent.next"], "next month")
+    settle(3)
+    save(app, "34-crescent-next")
+  }
 }

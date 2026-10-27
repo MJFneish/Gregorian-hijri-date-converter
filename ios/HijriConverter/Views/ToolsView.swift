@@ -18,18 +18,6 @@ private let tools = [
   Tool(route: .daysBetween, icon: .hourglass, key: "daysBetween"),
 ]
 
-private func toolKey(_ route: Route) -> String? {
-  switch route {
-  case .compareOffices: "compare"
-  case .occasions: "occasions"
-  case .birthday: "birthday"
-  case .fasting: "fasting"
-  case .crescent: "crescent"
-  case .daysBetween: "daysBetween"
-  case .onboarding: nil
-  }
-}
-
 /// The Tools tab: everything beyond the converter, one row per page, so Home stays just the Today
 /// card and the converter (user request, 2026-10-26 — the app is a converter, not a calendar).
 struct ToolsView: View {
@@ -90,22 +78,17 @@ struct ToolsView: View {
 
 /// The page for a tool route.
 struct ToolPage: View {
-  @Environment(\.appTheme) private var theme
   let route: Route
 
   var body: some View {
-    let s = theme.strings
-    let key = toolKey(route) ?? "compare"
     switch route {
     case let .compareOffices(jdn): CompareOfficesView(jdn: jdn)
     case .occasions: OccasionsView()
     case .daysBetween: DaysBetweenView()
-    default:
-      // Each tool is ported in its own pre-release; until then its page says so.
-      PageScreen(title: s["tools.\(key).title"], subtitle: s["tools.\(key).description"]) {
-        CenteredNote(text: "Coming in the next 2.0.0 pre-release.")
-          .padding(.top, Spacing.xxl)
-      }
+    case .birthday: BirthdayView()
+    case .fasting: FastingView()
+    case .crescent: CrescentView()
+    case .onboarding: EmptyView()
     }
   }
 }

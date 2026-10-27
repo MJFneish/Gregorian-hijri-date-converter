@@ -23,16 +23,17 @@ import androidx.compose.ui.unit.dp
 import com.devlance.hijriconverter.ui.LocalNavigator
 import com.devlance.hijriconverter.ui.Route
 import com.devlance.hijriconverter.ui.components.Card
-import com.devlance.hijriconverter.ui.components.CenteredNote
 import com.devlance.hijriconverter.ui.components.Divider
 import com.devlance.hijriconverter.ui.components.Icon
 import com.devlance.hijriconverter.ui.components.IconBadge
 import com.devlance.hijriconverter.ui.components.Lucide
-import com.devlance.hijriconverter.ui.components.PageScreen
 import com.devlance.hijriconverter.ui.components.pressable
 import com.devlance.hijriconverter.ui.theme.Spacing
+import com.devlance.hijriconverter.ui.tools.BirthdayScreen
 import com.devlance.hijriconverter.ui.tools.CompareOfficesScreen
+import com.devlance.hijriconverter.ui.tools.CrescentScreen
 import com.devlance.hijriconverter.ui.tools.DaysBetweenScreen
+import com.devlance.hijriconverter.ui.tools.FastingScreen
 import com.devlance.hijriconverter.ui.tools.OccasionsScreen
 import com.devlance.hijriconverter.ui.theme.Type
 import com.devlance.hijriconverter.ui.theme.appTheme
@@ -103,13 +104,9 @@ fun toolPage(route: Route) {
     is Route.CompareOffices -> CompareOfficesScreen(route.jdn)
     Route.Occasions -> OccasionsScreen()
     Route.DaysBetween -> DaysBetweenScreen()
-    else -> {
-      val s = appTheme().strings
-      val key = TOOLS.firstOrNull { it.route::class == route::class }?.key ?: return
-      // Each tool is ported in its own pre-release; until then its page says so.
-      PageScreen(title = s["tools.$key.title"], subtitle = s["tools.$key.description"]) {
-        CenteredNote("Coming in the next 2.0.0 pre-release.", Modifier.padding(top = Spacing.xxl))
-      }
-    }
+    Route.Birthday -> BirthdayScreen()
+    Route.Fasting -> FastingScreen()
+    Route.Crescent -> CrescentScreen()
+    is Route.Onboarding -> Unit
   }
 }
