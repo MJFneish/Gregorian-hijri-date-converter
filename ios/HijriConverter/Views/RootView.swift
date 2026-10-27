@@ -131,19 +131,22 @@ struct TabsView: View {
     VStack(spacing: 0) {
       // Not lazy, so all three pages stay alive and the converter keeps its state across tabs — and
       // so each page gets the pager's size explicitly (a plain HStack of container-relative pages
-      // grew past the screen).
+      // grew past the screen). Clipped, so scrolled content stops at the status bar.
       GeometryReader { geo in
         ScrollViewReader { proxy in
           ScrollView(.horizontal) {
             HStack(spacing: 0) {
               HomeView()
                 .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
                 .id(TabIndex.home)
               ToolsView()
                 .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
                 .id(TabIndex.tools)
               SettingsView()
                 .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
                 .id(TabIndex.settings)
             }
             .scrollTargetLayout()
@@ -162,10 +165,6 @@ struct TabsView: View {
             }
           }
         }
-      }
-      // Scrolled content stops at the status bar instead of running under the clock.
-      .overlay(alignment: .top) {
-        c.background.frame(height: 0).ignoresSafeArea(edges: .top).allowsHitTesting(false)
       }
 
       HairlineDivider()

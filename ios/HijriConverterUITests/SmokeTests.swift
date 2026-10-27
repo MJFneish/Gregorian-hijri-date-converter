@@ -127,7 +127,7 @@ final class SmokeTests: XCTestCase {
     tap(app.buttons["tab.0"], "converter tab")
     settle()
     tap(app.buttons["home.share"], "share")
-    settle(2.5)
+    settle(8) // the first share sheet on a fresh simulator is slow to appear
     save(app, "19-share-sheet")
   }
 }
