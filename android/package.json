@@ -1,6 +1,6 @@
 {
   "name": "hijri-converter-tooling",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.0-alpha.6",
   "private": true,
   "description": "Tooling for the Hijri Converter apps (Android: the Gradle project in this folder; iOS: ../ios). Yarn 1 only.",
   "scripts": {
