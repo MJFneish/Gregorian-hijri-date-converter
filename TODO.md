@@ -18,8 +18,10 @@ released on GitHub. One APK at the end of the round.
 - [x] Phase 3 — app shell on both: settings + v1 migration (Android, verified by installing over
       the real 1.10.0 APK), month-table updates, strings, theme, loading screen, onboarding, tabs,
       Settings tab, Tools list (tool pages are placeholders until phases 5–6) (alpha.4)
-- [ ] Phase 4 — Converter on both: Today card (tonight's moon, eve hint, next occasion), wheels,
-      draft + Convert, result with the moon, copy, share as image
+- [x] Phase 4 — Converter on both: Today card (tonight's moon, eve hint, next occasion), wheels,
+      draft + Convert, result with the moon, copy, share as image (Android: Compose snapping
+      wheels, share via an off-screen graphics layer; iOS: native wheel pickers, ImageRenderer +
+      share sheet)
 - [ ] Phase 5 — Tools on both: compare offices, occasions (+ share), days between
 - [ ] Phase 6 — Tools on both: Hijri birthday, fasting days, crescent forecast
 - [ ] Phase 7 — final parity check on both, docs, 2.0.0, release APK

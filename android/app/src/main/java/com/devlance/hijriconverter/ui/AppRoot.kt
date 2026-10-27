@@ -63,6 +63,7 @@ import com.devlance.hijriconverter.ui.components.Lucide
 import com.devlance.hijriconverter.ui.components.ToastHost
 import com.devlance.hijriconverter.ui.onboarding.OnboardingScreen
 import com.devlance.hijriconverter.ui.screens.HomeScreen
+import com.devlance.hijriconverter.ui.share.ShareHost
 import com.devlance.hijriconverter.ui.screens.SettingsScreen
 import com.devlance.hijriconverter.ui.screens.ToolsScreen
 import com.devlance.hijriconverter.ui.screens.toolPage
@@ -162,55 +163,57 @@ fun AppRoot() {
   }
 
   CompositionLocalProvider(LocalNavigator provides navigator) {
-    Box(Modifier.fillMaxSize().background(theme.colors.background)) {
-      if (!settings.onboardingDone) {
-        OnboardingScreen(onFinish = {})
-      } else {
-        val top = stack.lastOrNull()
-        Box(Modifier.fillMaxSize().then(if (top != null) Modifier.clearAndSetSemantics {} else Modifier)) {
-          Tabs(pager)
-        }
-        AnimatedContent(
-          targetState = top,
-          transitionSpec = {
-            val opening = stack.size >= depth
-            val replayIntro = (if (opening) targetState else initialState) is Route.Onboarding
-            if (replayIntro) {
-              // The introduction slides up from the bottom, as in v1.
-              (slideInVertically(tween(300)) { if (opening) it else 0 } + fadeIn(tween(200))) togetherWith
-                (slideOutVertically(tween(300)) { if (opening) 0 else it } + fadeOut(tween(200)))
-            } else {
-              // Tool pages come in from the reading direction's end (right in English, left in Arabic).
-              val sign = if (theme.isRtl) -1 else 1
-              (slideInHorizontally(tween(280)) { w -> if (opening) sign * w else -sign * w / 4 } + fadeIn(tween(200))) togetherWith
-                (slideOutHorizontally(tween(280)) { w -> if (opening) -sign * w / 4 else sign * w } + fadeOut(tween(200)))
-            }
-          },
-          label = "route",
-          modifier = Modifier.fillMaxSize(),
-        ) { route ->
-          if (route != null) {
-            // Pages are opaque and take every touch, so nothing reaches the tabs underneath.
-            Box(
-              Modifier
-                .fillMaxSize()
-                .background(theme.colors.background)
-                .pointerInput(Unit) { detectTapGestures { } },
-            ) {
-              when (route) {
-                is Route.Onboarding -> OnboardingScreen(onFinish = navigator::back)
-                else -> toolPage(route)
+    ShareHost {
+      Box(Modifier.fillMaxSize().background(theme.colors.background)) {
+        if (!settings.onboardingDone) {
+          OnboardingScreen(onFinish = {})
+        } else {
+          val top = stack.lastOrNull()
+          Box(Modifier.fillMaxSize().then(if (top != null) Modifier.clearAndSetSemantics {} else Modifier)) {
+            Tabs(pager)
+          }
+          AnimatedContent(
+            targetState = top,
+            transitionSpec = {
+              val opening = stack.size >= depth
+              val replayIntro = (if (opening) targetState else initialState) is Route.Onboarding
+              if (replayIntro) {
+                // The introduction slides up from the bottom, as in v1.
+                (slideInVertically(tween(300)) { if (opening) it else 0 } + fadeIn(tween(200))) togetherWith
+                  (slideOutVertically(tween(300)) { if (opening) 0 else it } + fadeOut(tween(200)))
+              } else {
+                // Tool pages come in from the reading direction's end (right in English, left in Arabic).
+                val sign = if (theme.isRtl) -1 else 1
+                (slideInHorizontally(tween(280)) { w -> if (opening) sign * w else -sign * w / 4 } + fadeIn(tween(200))) togetherWith
+                  (slideOutHorizontally(tween(280)) { w -> if (opening) -sign * w / 4 else sign * w } + fadeOut(tween(200)))
+              }
+            },
+            label = "route",
+            modifier = Modifier.fillMaxSize(),
+          ) { route ->
+            if (route != null) {
+              // Pages are opaque and take every touch, so nothing reaches the tabs underneath.
+              Box(
+                Modifier
+                  .fillMaxSize()
+                  .background(theme.colors.background)
+                  .pointerInput(Unit) { detectTapGestures { } },
+              ) {
+                when (route) {
+                  is Route.Onboarding -> OnboardingScreen(onFinish = navigator::back)
+                  else -> toolPage(route)
+                }
               }
             }
           }
+          LaunchedEffect(stack.size) { depth = stack.size }
         }
-        LaunchedEffect(stack.size) { depth = stack.size }
-      }
 
-      ToastHost()
+        ToastHost()
 
-      AnimatedVisibility(visible = loading, enter = fadeIn(tween(0)), exit = fadeOut(tween(380))) {
-        LoadingScreen()
+        AnimatedVisibility(visible = loading, enter = fadeIn(tween(0)), exit = fadeOut(tween(380))) {
+          LoadingScreen()
+        }
       }
     }
   }

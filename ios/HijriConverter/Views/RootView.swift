@@ -131,7 +131,8 @@ struct TabsView: View {
     VStack(spacing: 0) {
       ScrollViewReader { proxy in
         ScrollView(.horizontal) {
-          LazyHStack(spacing: 0) {
+          // Not lazy: all three pages stay alive, so the converter keeps its state across tabs.
+          HStack(spacing: 0) {
             HomeView()
               .containerRelativeFrame([.horizontal, .vertical])
               .id(TabIndex.home)

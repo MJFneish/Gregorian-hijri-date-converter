@@ -103,13 +103,3 @@ struct ToolPage: View {
     }
   }
 }
-
-/// Home = the Today card and the converter (ported in the next pre-release).
-struct HomeView: View {
-  @Environment(\.appTheme) private var theme
-
-  var body: some View {
-    CenteredNote(text: "The converter arrives in the next 2.0.0 pre-release.")
-      .background(theme.colors.background)
-  }
-}

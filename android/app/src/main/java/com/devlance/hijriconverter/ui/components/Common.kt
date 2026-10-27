@@ -37,6 +37,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.offset
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -289,5 +291,19 @@ fun CenteredNote(text: String, modifier: Modifier = Modifier) {
   val theme = appTheme()
   Box(modifier.fillMaxWidth().fillMaxHeight(), contentAlignment = Alignment.Center) {
     Text(text, style = Type.body, color = theme.colors.textMuted, textAlign = TextAlign.Center, modifier = Modifier.padding(Spacing.xl))
+  }
+}
+
+/**
+ * v1's negative margins: the content keeps its full size and draws over its neighbours, but takes
+ * `horizontal`/`vertical` less room on each side (a moon's glow spilling into the padding, the
+ * converter's arrow bubble overlapping the cards above and below).
+ */
+fun Modifier.negativeMargin(horizontal: Dp = 0.dp, vertical: Dp = 0.dp): Modifier = layout { measurable, constraints ->
+  val h = horizontal.roundToPx()
+  val v = vertical.roundToPx()
+  val placeable = measurable.measure(constraints.offset(2 * h, 2 * v))
+  layout((placeable.width - 2 * h).coerceAtLeast(0), (placeable.height - 2 * v).coerceAtLeast(0)) {
+    placeable.place(-h, -v)
   }
 }
