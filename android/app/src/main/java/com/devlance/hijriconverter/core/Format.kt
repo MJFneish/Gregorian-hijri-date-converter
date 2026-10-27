@@ -22,7 +22,7 @@ enum class Lang(val code: String) {
 private const val ARABIC_INDIC = "٠١٢٣٤٥٦٧٨٩"
 
 /** Non-breaking space: keeps "1448 AH" / "١٤٤٨ هـ" together when a long date wraps. */
-private const val NBSP = ' '
+private const val NBSP = '\u00A0'
 
 /** Arabic UI shows Arabic-Indic digits (١٤٢٣), like prayer-times-lb does. */
 fun localizeDigits(value: String, lang: Lang): String =

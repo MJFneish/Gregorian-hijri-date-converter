@@ -13,10 +13,11 @@ released on GitHub. One APK at the end of the round.
       (installs over 1.10.0 as an update), splash, icons, version tooling (2.0.0-alpha.1)
 - [x] Phase 2 — Android calendar engine in Kotlin + every v1 Jest suite ported to JUnit (alpha.2)
 - [x] Restructure into `android/` + `ios/`, v1 removed (user: "also do the ios too")
-- [ ] iOS catch-up — XcodeGen project, `HijriCore` Swift package with the engine (Astronomy
-      Engine's C edition for the crescent maths), the same unit tests, CI on macOS (alpha.3)
-- [ ] Phase 3 — app shell on both: settings + v1 migration (Android), month-table updates,
-      strings, theme, loading screen, onboarding, tabs, Settings tab, Tools list (alpha.4)
+- [x] iOS catch-up — XcodeGen project, `HijriCore` Swift package with the engine (Astronomy
+      Engine's C edition for the crescent maths), the same 57 unit tests, CI on macOS (alpha.3)
+- [x] Phase 3 — app shell on both: settings + v1 migration (Android, verified by installing over
+      the real 1.10.0 APK), month-table updates, strings, theme, loading screen, onboarding, tabs,
+      Settings tab, Tools list (tool pages are placeholders until phases 5–6) (alpha.4)
 - [ ] Phase 4 — Converter on both: Today card (tonight's moon, eve hint, next occasion), wheels,
       draft + Convert, result with the moon, copy, share as image
 - [ ] Phase 5 — Tools on both: compare offices, occasions (+ share), days between

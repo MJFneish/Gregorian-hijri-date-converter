@@ -92,11 +92,11 @@ class CalendarTest {
   @Test
   fun `formatting uses Arabic-Indic digits in Arabic`() {
     assertEquals("١٤٢٣", localizeDigits("1423", Lang.AR))
-    //   keeps the year and its era marker on one line when a long date wraps.
-    assertEquals("٨ محرّم ١٤٢٣ هـ", formatHijri(HijriDate(1423, 1, 8), Lang.AR))
-    assertEquals("8 Muharram 1423 AH", formatHijri(HijriDate(1423, 1, 8), Lang.EN))
+    // \u00A0 keeps the year and its era marker on one line when a long date wraps.
+    assertEquals("٨ محرّم ١٤٢٣\u00A0هـ", formatHijri(HijriDate(1423, 1, 8), Lang.AR))
+    assertEquals("8 Muharram 1423\u00A0AH", formatHijri(HijriDate(1423, 1, 8), Lang.EN))
     assertEquals("22 March 2002", formatGregorian(GregorianDate(2002, 3, 22), Lang.EN))
-    assertEquals("٢٢ آذار ٢٠٠٢ م", formatGregorian(GregorianDate(2002, 3, 22), Lang.AR))
+    assertEquals("٢٢ آذار ٢٠٠٢\u00A0م", formatGregorian(GregorianDate(2002, 3, 22), Lang.AR))
   }
 
   @Test

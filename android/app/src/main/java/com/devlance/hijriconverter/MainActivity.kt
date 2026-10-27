@@ -2,28 +2,25 @@ package com.devlance.hijriconverter
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.devlance.hijriconverter.data.AppStore
+import com.devlance.hijriconverter.ui.AppRoot
+import com.devlance.hijriconverter.ui.theme.HijriTheme
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
-    installSplashScreen()
+    // The system splash (night + emblem) is removed without a fade: the loading screen's first
+    // frame underneath is identical.
+    installSplashScreen().setOnExitAnimationListener { it.remove() }
     super.onCreate(savedInstanceState)
-    // The night background needs light status/navigation bar icons.
-    enableEdgeToEdge(SystemBarStyle.dark(android.graphics.Color.TRANSPARENT), SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
+    enableEdgeToEdge()
     setContent {
-      Box(Modifier.fillMaxSize().background(Color(0xFF110D2E)), contentAlignment = Alignment.Center) {
-        Text("Hijri Converter v${BuildConfig.VERSION_NAME}", color = Color.White)
-      }
+      val settings by AppStore.settings.collectAsStateWithLifecycle()
+      HijriTheme(settings) { AppRoot() }
     }
   }
 }

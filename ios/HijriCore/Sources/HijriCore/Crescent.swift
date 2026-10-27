@@ -13,7 +13,7 @@ import Foundation
 //
 // Instants are epoch milliseconds, truncated like the JS `Date`s v1 (and the build script) use.
 
-public enum Visibility: String, Sendable {
+public enum CrescentVisibility: String, Sendable {
   /// Sunset comes before the new moon (conjunction): no crescent can exist yet.
   case notBorn
   /// The moon sets with or before the sun.
@@ -51,7 +51,7 @@ public let vMaybeEye = 2.0
 public let vOptical = -0.96
 
 public struct CrescentReport: Hashable, Sendable {
-  public let visibility: Visibility
+  public let visibility: CrescentVisibility
   /// Odeh's V, when a crescent exists above the horizon after sunset.
   public let v: Double?
   /// Moon age at sunset (hours since the conjunction); nil before it.
@@ -104,7 +104,7 @@ public func conjunctionNear(_ nearMs: Int) -> Int? {
   }
 }
 
-private func zone(_ v: Double) -> Visibility {
+private func zone(_ v: Double) -> CrescentVisibility {
   if v >= vNakedEye { return .nakedEye }
   if v >= vMaybeEye { return .opticalMaybeEye }
   if v >= vOptical { return .opticalOnly }
