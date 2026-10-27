@@ -129,23 +129,35 @@ struct TabsView: View {
     @Bindable var navigator = navigator
     let c = theme.colors
     VStack(spacing: 0) {
-      ScrollView(.horizontal) {
-        LazyHStack(spacing: 0) {
-          HomeView()
-            .containerRelativeFrame([.horizontal, .vertical])
-            .id(TabIndex.home)
-          ToolsView()
-            .containerRelativeFrame([.horizontal, .vertical])
-            .id(TabIndex.tools)
-          SettingsView()
-            .containerRelativeFrame([.horizontal, .vertical])
-            .id(TabIndex.settings)
+      ScrollViewReader { proxy in
+        ScrollView(.horizontal) {
+          LazyHStack(spacing: 0) {
+            HomeView()
+              .containerRelativeFrame([.horizontal, .vertical])
+              .id(TabIndex.home)
+            ToolsView()
+              .containerRelativeFrame([.horizontal, .vertical])
+              .id(TabIndex.tools)
+            SettingsView()
+              .containerRelativeFrame([.horizontal, .vertical])
+              .id(TabIndex.settings)
+          }
+          .scrollTargetLayout()
         }
-        .scrollTargetLayout()
+        .scrollTargetBehavior(.paging)
+        .scrollIndicators(.hidden)
+        .scrollPosition(id: $navigator.tab)
+        .onChange(of: theme.isRtl) {
+          // Switching language mirrors the pages but keeps the scroll offset, which then shows
+          // another page (Settings → Arabic landed on the converter): put the current tab back.
+          let tab = navigator.tab ?? TabIndex.home
+          DispatchQueue.main.async {
+            var instant = Transaction()
+            instant.disablesAnimations = true
+            withTransaction(instant) { proxy.scrollTo(tab) }
+          }
+        }
       }
-      .scrollTargetBehavior(.paging)
-      .scrollIndicators(.hidden)
-      .scrollPosition(id: $navigator.tab)
 
       HairlineDivider()
       HStack(spacing: 0) {
