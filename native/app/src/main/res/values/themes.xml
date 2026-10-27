@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- The brand night (same as v1's bootsplash): the system splash, the window behind the app and
+       the animated loading screen share it, so nothing flashes between them. -->
+  <color name="night">#110D2E</color>
+
+  <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+    <item name="android:windowBackground">@color/night</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+  </style>
+
+  <!-- windowSplashScreenAnimatedIcon is v1's bootsplash logo: a 288 dp canvas with the 120 dp
+       emblem centred, the size the loading screen draws it at, so the hand-off doesn't jump. -->
+  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/night</item>
+    <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+    <item name="postSplashScreenTheme">@style/AppTheme</item>
+  </style>
+</resources>

@@ -1,6 +1,6 @@
 {
   "name": "hijri-converter",
-  "version": "1.10.0",
+  "version": "2.0.0-alpha.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -10,7 +10,10 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "bump": "node scripts/bump-version.js",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "test:native": "node scripts/test-native.js",
+    "build:apk": "node scripts/build-apk.js",
+    "release": "node scripts/publish-release.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
