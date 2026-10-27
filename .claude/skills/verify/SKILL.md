@@ -1,34 +1,37 @@
 ---
 name: verify
-description: This project's verification policy — read before running yarn test, yarn typecheck, yarn lint, a Gradle build or an emulator run. Do not run any of these proactively; only when the user explicitly asks to test/verify/build.
+description: This project's verification policy — read before running the Android unit tests, a Gradle build, an emulator run, or waiting on the iOS CI. Covers when to test and which check fits which change, on both apps.
 ---
 
 # Verification policy for Hijri Converter
 
-**Do not run `yarn test`, `yarn typecheck`, `yarn lint`, Gradle builds or emulator runs unless the
-user explicitly asks you to test, verify or build.** This is the user's standing preference across
-all their projects (it has cost real budget before). Make the change, explain what you did and why
-you're confident in it, and stop. Wait for an explicit "test it" / "verify this" / "build it".
+Outside feature work, **don't run tests, builds or emulator runs unless the user asks** ("test it",
+"build it"). Inside the per-feature release cycle (`~/.claude/CLAUDE.md`, "Personal APK projects"),
+testing is part of every feature: unit tests + the emulator for Android, CI for iOS.
 
-## When the user does ask, match the check to the change
+## Match the check to the change
 
-- **Calendar engine** (`src/core/**`, `scripts/build-hijri-tables.js`, the generated table):
-  `yarn test` is the right and only check (~10 s). It holds the golden fixtures: the user's
-  2002-03-22 example, every published Iranian month start, Umm al-Qura vs ICU daily 1990–2050,
-  round-trips for every day of every table, the Al Sirat Maghrib fixture. No build needed.
-- **Type-only / non-visual changes** (a type, a util, a store field): `yarn typecheck` alone.
-- **i18n string changes**: re-read the edited JSON and confirm the key matches its `t('...')` call
-  site, in both `en.json` and `ar.json`. Nothing to run.
-- **Native changes** (`android/**`, a new native dependency, bootsplash/icon regeneration): one
-  Gradle build — `cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a`
-  (release also runs the Metro bundle + Hermes compile, catching broken imports). Not via
-  `yarn android` on Windows (see help.md).
-- **UI/visual changes**: the only case that needs a device/emulator. Take at most one screenshot
-  after all edits are done — never after every intermediate edit. Check both themes and Arabic
-  only if the change touches them.
+- **Calendar engine** (Kotlin `core/**`, Swift `HijriCore`, `android/scripts/build-hijri-tables.js`,
+  the generated tables): the unit tests are the right check — `yarn test` in `android/` (~30 s) and
+  `swift test` on CI. They hold the golden fixtures: the user's 2002-03-22 example, every published
+  Iranian month start, Umm al-Qura vs ICU daily 1990–2050, round-trips for every day of every
+  table, the crescent forecast reproducing the Sistani/Iran tables, the Al Sirat Maghrib fixture.
+- **Settings / storage / table updates** (`data/**`, Swift `App/`): unit tests (`DataTest`,
+  `AppLogicTests`). The v1 → v2 migration can only be checked on the emulator: install the real
+  1.10.0 APK (kept outside the repo; rebuild from tag v1.10.0 if lost), change settings, install v2
+  over it.
+- **i18n strings**: re-read the edited JSON in both languages; both apps' copies must stay
+  identical (CI's shared-data job).
+- **Android UI**: `./gradlew.bat assembleDebug`, install on emulator-5560 (AVD Pixel_7, port 5560 —
+  other sessions use other emulators; always `adb -s emulator-5560`), take the minimum screenshots
+  after the feature is done, in English and Arabic, light and dark only where the change touches
+  them.
+- **iOS UI**: push, wait for the CI `ios` job, download the `ios-screenshots` artifact (GitHub API
+  with the git credential token) and look at it. Nothing iOS can be checked on this machine.
+- **Release APK**: `yarn build:apk` in `android/` (R8 minification catches what debug builds don't).
 
 ## Related
 
 - `update-hijri-data` — refreshing Iran's official data / recording an announcement /
-  re-calibrating. That workflow *does* include running `--calibrate` and `yarn test`, because
-  regenerated data must never ship untested.
+  re-calibrating. That workflow *does* include `--calibrate` and the tests, because regenerated
+  data must never ship untested.

@@ -1,0 +1,21 @@
+{
+  "name": "hijri-converter-tooling",
+  "version": "2.0.0-alpha.2",
+  "private": true,
+  "description": "Tooling for the Hijri Converter apps (Android: the Gradle project in this folder; iOS: ../ios). Yarn 1 only.",
+  "scripts": {
+    "test": "node scripts/test.js",
+    "bump": "node scripts/bump-version.js",
+    "build:apk": "node scripts/build-apk.js",
+    "release": "node scripts/publish-release.js",
+    "build:tables": "node scripts/build-hijri-tables.js",
+    "build:icons": "node scripts/build-icons.js",
+    "generate:icons": "node scripts/generate-icons.js",
+    "generate:moon": "node scripts/generate-moon.js"
+  },
+  "devDependencies": {
+    "astronomy-engine": "2.1.19",
+    "lucide-static": "1.60.0",
+    "sharp": "^0.35.5"
+  }
+}

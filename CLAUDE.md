@@ -1,48 +1,100 @@
 # Hijri Converter (محوّل التاريخ) — Gregorian ⇄ Hijri, Shia calendar
 
-A bare **React Native CLI** (TypeScript) app that converts dates between the Gregorian and Hijri
-calendars following **Shia calendar authorities**, bilingual (English / Arabic with RTL), light and
-dark themes, fully offline. Home (converter) + Settings tabs, onboarding, animated loading screen.
+Converts dates between the Gregorian and Hijri calendars following **Shia calendar authorities**,
+bilingual (English / Arabic with RTL), light and dark themes, fully offline (plus an optional daily
+download of corrected month starts). Three tabs — Converter · Tools · Settings — onboarding and an
+animated loading screen.
 
-See [`CONTINUE_PROJECT.md`](./CONTINUE_PROJECT.md) for a handoff snapshot if you're picking this up
-fresh, [`TODO.md`](./TODO.md) for the phased checklist (source of truth for "what's done"), and
-[`help.md`](./help.md) for the command cheat sheet.
+**Since v2 there are two native apps, no React Native:**
+- [`android/`](./android/) — Kotlin + Jetpack Compose (the Gradle project), plus all tooling
+  (`android/package.json`, `android/scripts/`).
+- [`ios/`](./ios/) — Swift + SwiftUI: an XcodeGen spec (`ios/project.yml`; the `.xcodeproj` is
+  generated, not committed), the app in `ios/HijriConverter/` and the engine as a Swift package in
+  `ios/HijriCore/` (unit-tested with `swift test`).
+- [`data/hijri-tables.json`](./data/hijri-tables.json) stays at the repo root: installed apps
+  (incl. v1.10.0) download it from exactly that URL — never move or rename it.
+
+v1 (React Native CLI 0.87, TypeScript) was removed when v2 was ported; it's in git history
+(last release tag **v1.10.0**) — `git show v1.10.0:src/...` to read it.
+
+**Every feature is built on both platforms** (user's rule for projects with `android/` and `ios/`):
+Kotlin for Android, Swift for iOS, tested on both. This machine is Windows with no Xcode, so **iOS is
+built and tested only on GitHub Actions macOS runners** (`.github/workflows/ci.yml`: `swift test`,
+then an XcodeGen + `xcodebuild test` UI smoke test whose screenshots are uploaded as an artifact).
+Say so when an iOS part can only be checked there.
+
+See [`TODO.md`](./TODO.md) for the phased checklist (source of truth for "what's done").
 
 **Project skills** (`.claude/skills/`) — check these before the matching kind of work:
-- `verify` — **read before running `yarn test` / `yarn typecheck` / a Gradle build.** Don't run any
-  of them proactively; the user wants an explicit "test it" / "build it" first.
+- `verify` — **read before running tests, a Gradle build or an emulator run.**
 - `update-hijri-data` — refreshing Iran's official month data, recording a new announcement,
   re-calibrating the crescent rules, regenerating the tables.
 
-**This is bare RN CLI, not Expo** — same as the sibling `lexitoon`, unlike `prayer-times-lb`.
-`android/` and `ios/` are real, checked-in native projects you edit directly.
+## Layout and stack
 
-## Stack
+### Android (`android/`)
 
-- React Native **0.87.1** (New Architecture, Hermes), TypeScript. 0.87.1 rather than the newer
-  0.88.0 on purpose: 0.88 was 5 days old when this was scaffolded, and 0.87.1 is what lexitoon
-  already builds with on this machine. Native libs are pinned to lexitoon's proven versions
-  (reanimated 4.6.0 + worklets 0.12.1, gesture-handler 3.2.1, screens 4.27.0, svg 15.15.5).
-- **Yarn 1 (classic) only** — never npm. The RN template pins Yarn 3 via `.yarnrc.yml`; that was
-  removed so plain `yarn` behaves like in prayer-times-lb.
-- Navigation: `@react-navigation/native` + `native-stack` for the root (Onboarding → Main), and
-  **prayer-times-lb's live-drag tab pager** for Main (see "Tabs pager" below). Native headers are
-  off everywhere (`headerShown: false`).
-- State: `zustand` + `persist` over AsyncStorage ([`src/store/useSettingsStore.ts`](./src/store/useSettingsStore.ts))
-  — language, theme mode, calculation method, ±2-day adjustment, onboarding flag. Same pattern as
-  prayer-times-lb.
-- i18n: `i18next` + `react-i18next`, device language via `react-native-localize`. RTL is
-  **JS-driven** through [`useDirection`](./src/hooks/useDirection.ts) (instant switch, no restart),
-  exactly like the sibling apps — native `I18nManager` RTL is deliberately off, so every
-  direction-sensitive layout mirrors itself via `rowDirection` / `textAlign` / `isRTL`.
-- Animation: `react-native-reanimated` v4 (Babel plugin is `'react-native-worklets/plugin'`, not
-  the old reanimated one) + `react-native-gesture-handler` (imported first in `index.js`).
-- Icons: `lucide-react-native` (SVG, one consistent stroke family — no emoji icons).
-- Native splash: `react-native-bootsplash` → hands off to the animated JS
-  [`LoadingScreen`](./src/components/LoadingScreen.tsx).
-- Path alias: none — relative imports (no babel module-resolver needed in RN CLI).
+- Kotlin 2.2.10, AGP 8.12, Gradle 9.3.1, Compose BOM 2025.08.00, min SDK 24 / target 36 (same
+  toolchain as prayer-times-lb's v2). `version.properties` is the version source of truth.
+- `app/src/main/java/com/devlance/hijriconverter/`:
+  `core/` (the engine — pure Kotlin, unit-tested on the JVM), `data/` (settings, v1 migration,
+  month-table updates), `i18n/` (`Strings`, `Plural`), `ui/` (Compose: `AppRoot` navigation,
+  `theme/`, `components/`, `brand/`, `onboarding/`, `screens/`).
+- **Updating over v1 must keep working:** same application id `com.devlance.hijriconverter`, same
+  signing key (`app/debug.keystore` — the RN template key every v1 release carries), same launcher
+  activity name (`.MainActivity`). On first launch `data/LegacyMigration.kt` imports v1's settings
+  and downloaded tables from AsyncStorage (SQLite `RKStorage`, table `catalystLocalStorage`, keys
+  `hijri-converter-settings` = zustand `{state, version}`, `hijri-tables-remote`,
+  `hijri-tables-last-check`). Verified on the emulator by installing the real 1.10.0 APK, changing
+  every setting, then installing v2 over it.
+- Strings are v1's i18next files as assets (`app/src/main/assets/i18n/`), looked up by `Strings`
+  (dot keys, `{{placeholders}}`). The app language is independent of the phone's; Compose
+  `LocalLayoutDirection` follows it, so RTL flips instantly.
+- Icons: lucide (v1's set), generated as path data by `scripts/build-icons.js` for both apps
+  (`ui/components/LucideIcons.kt`, drawn by `Icon`).
+- Engine dependency: Astronomy Engine's Kotlin build from **JitPack**
+  (`com.github.cosinekitty:astronomy:v2.1.19`, `exclusiveContent` in `settings.gradle.kts`) for the
+  crescent forecast — the same library and version the tables are built with.
+- Tests: JVM unit tests (`yarn test` in android/) incl. icu4j as the ICU reference.
 
-## Calendar engine — read before touching `src/core/`
+### iOS (`ios/`)
+
+- SwiftUI, iOS 17+. `HijriCore` (Swift package): the engine and the app logic (settings, strings,
+  month-table updates) with the same unit tests as Android, plus `CAstronomy`, Astronomy Engine's
+  single-file C edition (v2.1.19, MIT) as a C target — there is no Swift edition.
+- Bundle id `com.devlance.hijriconverter` (v1's). `project.yml` carries MARKETING_VERSION /
+  CURRENT_PROJECT_VERSION, kept equal to `android/version.properties` by `yarn bump`.
+- Strings: the same i18n JSON files (`HijriCore/Sources/HijriCore/Resources/i18n/`); CI checks the
+  Android and iOS copies are identical. RTL via `\.layoutDirection` from the app language.
+
+### Tooling (`android/package.json`, Yarn 1 only — never npm)
+
+```
+cd android
+yarn install            # tooling deps (astronomy-engine, sharp, lucide-static)
+yarn test               # Android unit tests (Gradle)
+yarn bump pre|patch|minor|major|release [--dry-run]   # both apps' versions
+yarn build:apk          # release APK -> android/dist/HijriConverter-v<version>-build<code>.apk
+yarn release --notes <file.md> [--apk]  # GitHub release of the current version (API, no gh)
+yarn build:tables [-- --calibrate]      # regenerate / re-check the month tables (Kotlin, Swift, JSON)
+yarn build:icons        # lucide icons -> Kotlin + Swift
+yarn generate:icons     # launcher icons, iOS app icon + launch logo, brand SVGs
+yarn generate:moon      # moon texture -> Android drawables + iOS asset catalog
+./gradlew.bat assembleDebug   # debug APK for the emulator
+```
+
+**Release routine** (the user's standing order): each feature is built on both apps, tested
+(Android: unit tests + emulator; iOS: CI), committed and pushed; then `yarn bump` (feature → minor,
+fix → patch; `pre` during the v2 port), the bump committed, tagged `v<version>` and pushed, and a
+GitHub release titled with the version (`yarn release`). One APK at the end of a round of features.
+
+## Calendar engine — read before touching `core/` (Kotlin) or `HijriCore` (Swift)
+
+Both apps implement the same engine, ported from v1's TypeScript **step by step**: truncating
+integer division in the JDN formulas (Longs where JS doubles would overflow an Int), JS
+`Math.round` (= floor(x + 0.5)) and `toFixed` rounding (exact binary value, half away from zero),
+JS `Date`'s truncated milliseconds in the crescent maths, JS Astronomy Engine's `AngleBetween`.
+Don't "tidy" those into idiomatic rounding without the golden tests.
 
 ### Methods (user decisions, 2026-10-20)
 
@@ -58,324 +110,122 @@ calendar, so the app offers a method switch (Settings → Calculation method):
 | `ummalqura` | Saudi Umm al-Qura (Sunni, reference only) | ICU `islamic-umalqura` at build time | 8 Muharram |
 
 **Important nuance for the user**: their example (8 Muharram) matches **Fadlallah**, not the Iran
-default they picked (Iran started 1423 on Sat 16 Mar → 7 Muharram). This was flagged to them;
-the golden test asserts the example under `fadlallah`. If they want the example to hold by
-default, change `DEFAULT_METHOD` in [`src/core/hijri/methods.ts`](./src/core/hijri/methods.ts).
+default they picked (Iran started 1423 on Sat 16 Mar → 7 Muharram). This was flagged to them; the
+golden test asserts the example under `fadlallah`. To make the example hold by default, change
+`DEFAULT_METHOD` (Kotlin `core/hijri/Types.kt`, Swift `Hijri/Types.swift`).
 
 ### How it's built
 
-- **The month tables are precomputed at build time** by [`scripts/build-hijri-tables.js`](./scripts/build-hijri-tables.js)
-  (Node + `astronomy-engine`) into
-  [`src/core/hijri/tables.generated.ts`](./src/core/hijri/tables.generated.ts): per method, the
-  JDN of 1 Muharram 1343 + one 12-bit mask per Hijri year (bit = 30-day month), 1343–1500 AH
-  (1924–2077). ~3 KB total. Conversions never run astronomy on the phone. (Since v1.9.0
-  `astronomy-engine` 2.1.19 is also a runtime dependency, for the crescent forecast only — pure
-  JS, no native code.)
+- **The month tables are precomputed at build time** by
+  [`android/scripts/build-hijri-tables.js`](./android/scripts/build-hijri-tables.js) (Node +
+  `astronomy-engine`) into `TablesGenerated.kt`, `TablesGenerated.swift` and
+  `data/hijri-tables.json`: per method, the JDN of 1 Muharram 1343 + one 12-bit mask per Hijri year
+  (bit = 30-day month), 1343–1500 AH (1924–2077). ~3 KB. Conversions never run astronomy on the
+  phone (only the crescent forecast does).
 - Crescent rule (all computed methods): from a month's day 1 at civil date S, evaluate the evening
   of day 29 (civil S+28) — visible → next month starts S+29, else the month completes 30 days.
-  Self-correcting (an anchor error fades within a month or two).
 - Visibility = **Odeh's criterion** (Odeh 2004): at best time Tb = sunset + 4/9·lag,
   `V = ARCV − (−0.1018W³ + 0.7319W² − 6.3226W + 7.1651)` with airless topocentric ARCV (deg) and
   crescent width W (arcmin). Zones: ≥5.65 naked eye; 2–5.65 optical aid, maybe naked eye;
   −0.96–2 optical aid only.
-- **Calibration** (`node scripts/build-hijri-tables.js --calibrate`): Iran predictor vs. 573 real
-  months (1400–1447 AH) → **V ≥ 2: 91.1% exact, every miss within one day** (9 early / 42 late).
+- **Calibration** (`yarn build:tables -- --calibrate`): Iran predictor vs. 573 real months
+  (1400–1447 AH) → **V ≥ 2: 91.1% exact, every miss within one day** (9 early / 42 late).
   Fadlallah rule reproduces all 5 known office dates (1423/1, 1432/9, 1435/10, 1446/10, 1447/10).
-- Runtime ([`src/core/hijri/`](./src/core/hijri/)): binary search over decoded month starts.
-  Outside 1343–1500 AH the **arithmetic (tabular civil) calendar** takes over, *shifted to continue
-  seamlessly from each method's table edge* (unshifted, one Gregorian day mapped to "1 Muharram
-  1343" twice and round-trips broke — see `seamOffsets` in `convert.ts`). Such dates are labelled
-  "Approximate".
-- Every conversion goes through an integer **JDN** ([`src/core/calendar.ts`](./src/core/calendar.ts)).
-  The Fliegel–Van Flandern formula **must use truncating division** (`Math.trunc`). prayer-times-lb's
-  `hijri.ts` uses `Math.floor` there, which drifts 1–2 days by month/leap-cycle position (it gives
-  9 Muharram for the user's example); a calibrated epoch hid it for July 2026. Don't copy that file.
+- Lookup: binary search over decoded month starts. Outside 1343–1500 AH the **arithmetic (tabular
+  civil) calendar** takes over, *shifted to continue seamlessly from each method's table edge*
+  (unshifted, one Gregorian day mapped to "1 Muharram 1343" twice — see `seamOffsets`). Such dates
+  are labelled "Approximate".
+- Every conversion goes through an integer **JDN**. The Fliegel–Van Flandern formula **must use
+  truncating division**. prayer-times-lb's v1 `hijri.ts` floored there, which drifts 1–2 days by
+  month/leap-cycle position. Don't copy that.
 - Manual adjustment (−2…+2): Hijri(G) = table(JDN(G) + adj); Gregorian(H) = JDN(H) − adj.
-- `DateSource` labels: `official` (Iran published / Umm al-Qura), `calculated` (rule-based),
+- `DateSource`: `official` (Iran published / Umm al-Qura), `calculated` (rule-based),
   `approximate` (tabular fallback).
 - Sighting calendars can have **353- or 356-day years** (Iran's real data has them) — only
-  arithmetic calendars are limited to 354/355. The integrity test asserts 353–356 on purpose.
+  arithmetic calendars are limited to 354/355. The integrity tests assert 353–356 on purpose.
 
-### Occasions, eve hint
+### Month-start updates without a new release (since v1.10.0)
 
-- [`src/core/occasions.ts`](./src/core/occasions.ts): 44 Twelver occasions (researched against
-  Iran's official holidays, Sistani's office/I.M.A.M. lists, Fadlallah's office, WikiShia). Where
-  narrations differ, Iran/Lebanon's date is used and the alternative is noted inline.
-  `lastDayOfMonth` entries (Imam al-Rida — end of Safar; Imam al-Jawad — end of Dhu al-Qi'dah)
-  resolve to the 29th or 30th.
-- **Day change = midnight, with an "eve" hint after Maghrib** (user's choice). Maghrib = sun 4.5°
-  below the horizon (prayer-times-lb's verified Jafari angle) **at Beirut**, no location permission
-  ([`src/core/maghrib.ts`](./src/core/maghrib.ts)). Test asserts Al Sirat's published Beirut
-  Maghrib (2026-07-12 20:11) within a minute.
-
-### Moon phase (converter result)
-
-- User request (2026-10-23): show the Moon for each converted day, **realistic like a weather
-  app, a different shape every day, not 8 icons**. [`src/core/moon.ts`](./src/core/moon.ts)
-  computes it **on the phone** (unlike the month tables): Meeus eq. 48.4 plus the next ch. 47
-  longitude terms → elongation within ~0.1–0.3° of astronomy-engine, illuminated fraction, waxing,
-  age (Newton steps back to the conjunction) and a name. Principal names (new / first quarter /
-  full / last quarter) go only on the day whose sample is within ±12 h of the exact instant.
-  `illuminationPercent` keeps "100%" / "0%" for full / new days only.
-- Sampled at **Beirut's Maghrib** of the civil day (`moonPhaseOnDay`), the app's existing start of
-  the Islamic night — so day 1 of a month shows a young crescent and the 14th/15th the full moon.
-  It depends on the Gregorian day only; method and ±adjustment don't move the Moon.
-- Drawing ([`MoonDisc.tsx`](./src/components/moon/MoonDisc.tsx)): an RN `Image` of a real
-  full-moon texture, with an SVG overlay of 11 stacked translucent night-side shadows (terminator
-  = half-ellipse with semi-axis r·|cos ψ|, each layer's terminator shifted a few degrees) for the
-  soft terminator, and a dim night side that still shows the maria, like earthshine. The shadows overhang the limb by
-  0.35 dp so the texture's anti-aliased edge doesn't show a bright rim (more overhang draws a dark
-  ring). North up, waxing lit on the right. `fadeDuration={0}`, or Android fades the photo in under the shadows.
-- Texture: [`scripts/generate-moon.js`](./scripts/generate-moon.js) projects NASA's LRO colour
-  mosaic (`scripts/data/lroc_color_2k.jpg`, CGI Moon Kit, public domain — credit "NASA's
-  Scientific Visualization Studio", shown in Settings → About) onto the near side →
-  `assets/moon/moon{,@2x,@3x}.png` (96/192/288 px = `MOON_SIZE` 96 dp). Pure asset step, no phase baked in.
-- The result card's date sits in an always-dark night panel (the moon only looks real on a
-  night sky) at `displayLarge` (was `displayMedium`), with the moon row under it —
-  [`ResultPanel`](./src/components/home/ResultPanel.tsx), shared with the share image;
-  `ResultSkeleton` mirrors that shape.
-- The Today card shows **tonight's moon** too (64 dp `MoonDisc` beside the Gregorian date + a
-  "Tonight's moon: …" info row); it replaced the old decorative crescent watermark (v1.4.0).
-
-### Share = an image of the result (user request, 2026-10-23)
-
-- **Share** sends a picture of the result card (night panel + moon + texts, source badge,
-  occasions) under the app's name, with the method as a footer
-  ([`ShareCard`](./src/components/home/ShareCard.tsx), current theme + language), plus the old
-  sentence as the caption. `react-native-view-shot` 6.1.1 captures it, `react-native-share`
-  12.3.1 sends it (RN's own `Share` can't send files on Android). Both pinned exactly.
-- **One share mechanism for every card** (v1.6.0): [`ShareHost`](./src/components/share/ShareHost.tsx)
-  (mounted in `App.tsx` around the navigator) + `useShareImage().share({ card, message, filename })`.
-  The host renders the card on demand, **parked off-screen** (`position: absolute, left: -10000`),
-  waits until it has really drawn — every [`useCaptureHold`](./src/components/share/CaptureReady.tsx)
-  released: `MoonDisc` on its photo's `onLoad`, `GradientFill` once sized — plus two frames, then
-  captures (2.5 s timeout). Any new component that draws asynchronously must hold the same way.
-  This works because view-shot on Android calls `view.draw()` into its own bitmap (not PixelCopy
-  of the screen), and RN 0.87 has view culling off by default (`enableViewCulling`); revisit if
-  either changes. **Not inside a clipped 0×0 box** (the first version): Yoga measured the card's
-  content against that zero height and the capture was a 360×48 dp strip of padding (found on
-  the emulator, 2026-10-26). The tracker object must stay stable for a capture (a new identity
-  would make holders release + re-hold, and a release can fire the capture early). No elevation
-  in a share card (shadows don't survive the software canvas), a border instead.
-- "Busy" on a Share button covers the capture only; `Share.open` isn't awaited, so the button
-  never waits on what the receiving app or a dismissed sheet reports back.
-- **Occasions** ([`OccasionsScreen`](./src/screens/tools/OccasionsScreen.tsx), `upcomingOccasions`
-  in `core/today.ts`): every occasion from today to the same Hijri date next year (so each appears
-  exactly once), grouped by Hijri month, All / Mourning / Celebrations filter, countdown chip, and a
-  share button per row — the same ShareCard with `highlight={occasion}` leading the card.
-- **Hijri birthday** ([`BirthdayScreen`](./src/screens/tools/BirthdayScreen.tsx),
-  [`core/birthday.ts`](./src/core/birthday.ts)): birth date entered in either calendar, stored as
-  a JDN in the settings store (`birthJdn`, phone only, "Forget" clears it); shows the Hijri birth
-  date, the next Hijri birthday (countdown, Gregorian date, age reached; a 30th in a 29-day month
-  falls on the 29th — `clamped`) and the age in Hijri vs Gregorian years (`spanPhrase` in
-  `i18n/plural.ts`).
-- **Fasting days** ([`FastingScreen`](./src/screens/tools/FastingScreen.tsx),
-  [`core/fasting.ts`](./src/core/fasting.ts)) — list only, **no notifications** (user's choice).
-  Rules researched 2026-10-26 in the marjas' own texts: Sistani *Islamic Laws* r.1716 (recommended)
-  / r.1707, 1715 (haram/makruh) and *Minhaj* 1063–1066; Khamenei رساله نماز و روزه 976–980 and
-  *Rules of Fasting* Q2/Q4; Fadlallah's treatise (أنواع الصوم) and his Arafah/Shawwal articles on
-  bayynat.org.lb. Main list = what they share: first Thursday (days 1–7), middle Wednesday (first
-  Wednesday of the 11th–20th = always 11–17), last Thursday, White Days 13–15, all of Rajab and
-  Sha'ban, 27 Rajab, 17 Rabi' al-Awwal, 25 Dhu al-Qi'dah, 18 and 24 Dhu al-Hijjah, 9 Dhu
-  al-Hijjah (Arafah — only if it won't weaken you from its du'a; discouraged if the crescent is in
-  doubt, so a caution shows when the month start isn't official). Tagged "Sistani's list": 1–8
-  Dhu al-Hijjah, 1/3/7 Muharram, 4–9 Shawwal. **Never suggested**: Ramadan (obligatory), 1 Shawwal
-  and 10 Dhu al-Hijjah (forbidden), Ashura (discouraged — shown as "abstain in mourning until after
-  Asr, not a fast"). Left out as single-source/too broad: Nowruz, 29 Dhu al-Qi'dah, 15 Jumada
-  al-Ula, every Thursday/Friday. Default window: this month + 2; "Show the whole year" → 12.
-- **Crescent forecast** ([`CrescentScreen`](./src/screens/tools/CrescentScreen.tsx),
-  [`core/crescent.ts`](./src/core/crescent.ts)): the build script's Odeh rule ported to TS and run
-  on the phone with astronomy-engine — **keep the two in sync**; `crescent.test.ts` asserts the
-  port reproduces the Sistani table (Najaf, V ≥ 5.65) and every predicted Iran month (best of the
-  6 cities, V ≥ 2) for 1440–1450 exactly. Shows, per month start (stepper, 0–11 ahead): the
-  conjunction time (device time), the 29th and 30th evenings (in the user's calendar) for Beirut
-  (Fadlallah's reference), Najaf (Sistani) and Iran (best city), with Odeh zone, moon age and lag,
-  and each office's expected 1st (raw tables). Computed in a `setTimeout` after the frame (a few
-  hundred ms of astronomy) with a "Calculating…" state.
-
-### Month-start updates without a new APK (v1.10.0)
-
-- `scripts/build-hijri-tables.js` also writes the tables as **`data/hijri-tables.json`** (2.4 KB,
-  `format: 1`, `generated` timestamp — reused when the tables didn't change). Installed apps
-  download it from the repo's `develop` branch ([`useTableStore`](./src/store/useTableStore.ts):
-  `init()` at startup restores a stored download, then checks if 24 h passed; Settings →
-  Calendar data → "Check for updates" forces one) and apply it when **newer** and **valid**
-  (`validateTableData` in [`tables.ts`](./src/core/hijri/tables.ts): same 1343–1500 range,
-  well-formed masks, 353–356-day years, every month start within 3 days of the bundled one).
-- The tables are swappable at runtime (`setTableData`, `currentTables`, `iranLastOfficial()` —
-  `hijriSource` reads the cutoff from the tables in use, so an update can move "official").
-  `useConversionOptions()` carries `tablesVersion`, so **every memo keyed on `opts` recomputes**
-  after an update — key conversion memos on the whole `opts`, not just `opts.method`.
-- `tables.test.ts` fails if `data/hijri-tables.json` and `tables.generated.ts` differ: commit both.
+- The build script writes the tables as **`data/hijri-tables.json`** (`format: 1`, `generated`
+  timestamp — reused when the tables didn't change). Apps download it from the repo's `develop`
+  branch (`data/TableUpdates.kt` / Swift `TableUpdates`: restore a stored download at startup,
+  check if 24 h passed; Settings → Calendar data → "Check for updates" forces one) and apply it
+  when **newer** and **valid** (`validateTableData`: same 1343–1500 range, well-formed masks,
+  353–356-day years, every month start within 3 days of the bundled one).
+- Tables are swappable at runtime; the conversion options carry `tablesVersion`, so anything
+  remembered on them recomputes after an update — key conversions on the whole options.
+- The table tests fail if `data/hijri-tables.json` and the generated code differ: commit all three.
   Publishing a correction = the `update-hijri-data` skill + push; no app release needed.
-- **RN Android keeps a stale "busy" in the content description** of a view with no
-  `accessibilityLabel` once `accessibilityState.busy` goes back to false (`BaseViewManager.
-  updateViewContentDescription` only writes a non-empty list). TalkBack then says "busy" forever,
-  and UI Automator dumps show `desc="busy"`. Give any view that toggles `busy` an explicit
-  `accessibilityLabel` (Convert and Share do).
-- Captured as a JPEG **data URI** and shared with `useInternalStorage: true`: react-native-share
-  then writes it to the internal cache, which its FileProvider (`share_download_paths.xml`:
-  internal cache + external `Download/`) covers, with no storage permission. view-shot's own
-  `tmpfile` can land in the *external* cache, which that provider doesn't cover.
-  `failOnCancel: false` keeps a dismissed sheet from triggering the text-only fallback.
-- iOS needs `pod install` for both libraries (never run — no macOS here).
+- The repo must stay **public** for that URL to work.
 
-## UI architecture
+### Occasions, eve hint, moon
 
-- **Tabs pager** ([`MainTabs.tsx`](./src/navigation/MainTabs.tsx)): ported from prayer-times-lb —
-  all pages side by side, the row live-translates with the finger, snaps on release/fling.
-  `failOffsetY` keeps vertical drags (scrolling, wheels) from starting a tab swipe. **In Arabic the
-  row and the tab bar mirror together** (first tab on the right) — lexitoon proved that mirroring
-  only one of them feels inconsistent. Screens reach tabs via `useTabPager().goToTab(TAB_INDEX.x)`.
-- **Three tabs: Converter · Tools · Settings** (user request, 2026-10-26: "the app is a
-  converter, not a calendar", and Home had grown too long). **Home = the Today card + the
-  converter only** — no app name/icon header. Everything else is a page under
-  [`ToolsScreen`](./src/screens/ToolsScreen.tsx): one row per tool from its `TOOLS` registry,
-  opening a root-stack screen in [`src/screens/tools/`](./src/screens/tools/) built on
-  [`PageScreen`](./src/components/ui/PageScreen.tsx) (back button mirrored in Arabic, title,
-  subtitle, scrolling body). Tool pages slide in from the right in English and from the left in
-  Arabic (`RootNavigator`'s `toolPage` options — native RTL is off, so the stack doesn't mirror
-  itself). Adding a tool = screen + route in `navigation/types.ts` + `RootNavigator` + a `TOOLS`
-  entry + `tools.<key>.title/description` strings. Days-between moved there first.
-- **Compare offices** ([`CompareOfficesScreen`](./src/screens/tools/CompareOfficesScreen.tsx),
-  [`core/compare.ts`](./src/core/compare.ts)): one day under every method, each row's offset vs.
-  the user's method ("1 day ahead" = it shows today what the user's office shows tomorrow; found by
-  label search ±3 days, falling back to next-month starts for a 30th the other office doesn't
-  have), plus when each office began its current month. The ±adjustment is **not** applied there
-  (raw office calendars, with a note). Reached from Tools (today) or the converter result's
-  "Compare offices" link (that day, `route.params.jdn`) — the link shares the source badge's
-  row so the result card doesn't grow.
-- **Wheel picker** ([`WheelPicker.tsx`](./src/components/picker/WheelPicker.tsx)): native date
-  pickers can't show Hijri months. A **plain ScrollView, not a FlatList** — the wheels sit inside
-  the Home screen's vertical ScrollView, and a same-direction VirtualizedList nested there
-  triggers RN's "VirtualizedLists should never be nested inside plain ScrollViews" error (the
-  first on-device run showed it). Lists are ≤ ~200 rows; rows are `memo`ized by emphasis level so
-  a centered-index change re-renders only 3–5 rows. Static selection band + SVG fades, **not**
-  per-row Reanimated styles. Settles on momentum end or, for slow drags, 120 ms after release.
-  `adjustable` accessibility role with increment/decrement. Content has 2 rows of padding, so
-  scroll offset `i·h` centers row i; initial position is applied once both `onLayout` and
-  `onContentSizeChange` have fired (Android ignores an earlier `scrollTo`).
-- **Converter = draft + Convert button** ([`ConverterSection.tsx`](./src/components/home/ConverterSection.tsx)),
-  per the user (2026-10-20): **don't convert while the wheels turn.** The wheels edit a *draft*
-  (a JDN + direction); **Convert** scrolls Home to the result card
-  ([`HomeScrollContext`](./src/components/home/HomeScrollContext.tsx) — `measureLayout` against
-  one content view wrapping every section, so its offset *is* the scroll position), shows
-  [`ResultSkeleton`](./src/components/home/ResultSkeleton.tsx) + "Converting…" for
-  `MIN_CONVERTING_MS` (550 ms), then applies and fades the result in. The lookup itself takes
-  well under 1 ms — the minimum duration is there so the feedback is readable and the scroll
-  finishes first. The result card always shows the last *applied* conversion and, when the
-  wheels/direction moved since, an "showing the previous result" note. Switching direction keeps
-  the draft's day; changing method/adjustment re-labels the applied result instantly. The busy
-  Convert button uses `PressableScale dimWhenDisabled={false}` (busy ≠ unavailable).
-- **Loading**: bootsplash (night `#110D2E`, 120 dp emblem) → `LoadingScreen`, whose first frame is
-  identical, so `BootSplash.hide({ fade: false })` is invisible; then arrows spin, stars twinkle,
-  min 1.2 s (`MIN_LOADING_VISIBLE_MS` in `App.tsx`). Respects reduced motion.
-- **Onboarding**: 4 slides, original animated SVG art ([`Illustrations.tsx`](./src/components/onboarding/Illustrations.tsx)),
-  horizontal FlatList `inverted` in Arabic, language switch on the first screen, replayable from
-  Settings (`replay` param → goBack instead of reset).
-- Counted phrases ("3 years and 2 months", "٣ سنوات وشهران") come from
-  [`src/i18n/plural.ts`](./src/i18n/plural.ts), **not** i18next plurals — those need
-  `Intl.PluralRules`, which Hermes doesn't reliably provide, and Arabic needs 6 CLDR forms.
-  **When the template puts the count after a preposition** ("بعد {{days}}", "إلى {{days}}",
-  "بـ{{days}}"), call `countPhrase(unit, n, lang, true)`: Arabic then needs the genitive dual
-  (بعد يومين — "بعد يومان" was a real bug on the Today card and every tool page, fixed in v1.8.0).
-- Arabic UI shows Arabic-Indic digits via `localizeDigits()`; Gregorian month names are Levantine
-  (كانون الثاني…), as Lebanese calendars print them.
+- `Occasions`: 44 Twelver occasions (Iran's official holidays, Sistani's office/I.M.A.M. lists,
+  Fadlallah's office, WikiShia). Where narrations differ, Iran/Lebanon's date is used, the
+  alternative noted inline. `lastDayOfMonth` entries resolve to the 29th or 30th.
+- **Day change = midnight, with an "eve" hint after Maghrib** (user's choice). Maghrib = sun 4.5°
+  below the horizon **at Beirut** (prayer-times-lb's verified Jafari angle), no location permission.
+  Test: Al Sirat's published Beirut Maghrib (2026-07-12 20:11) within a minute.
+- Moon phase (user request 2026-10-23: realistic, a different shape every day): Meeus eq. 48.4 +
+  ch. 47 terms, sampled at **Beirut's Maghrib** of the civil day — day 1 shows a young crescent, the
+  14th/15th the full moon. Depends on the Gregorian day only. Principal names only on the day within
+  ±12 h of the exact instant; "100%"/"0%" only on full/new days. Drawn as NASA's LRO full-moon
+  texture (`yarn generate:moon`, credited in Settings → About) under 11 stacked translucent night
+  shadows (terminator = half-ellipse, semi-axis r·|cos ψ|) overhanging the limb by 0.35 dp.
 
-## Design system ("Lunar Indigo")
+### Tools (each its own page under the Tools tab — the app is a converter, not a calendar)
 
-Generated with the `ui-ux-pro-max` skill (installed globally at `~/.claude/skills/ui-ux-pro-max`
-for this project; it recommended "spiritual purple + warm gold"). Tokens in
-[`src/theme/colors.ts`](./src/theme/colors.ts) — indigo primary `#4B3AC0` / dark `#A99CFF`, gold
-accent, hero gradient `#2B1F7A → #5A47D6`. All text pairs ≥ 4.5:1. System fonts (proper Arabic
-shaping for free). 4/8 dp spacing, 48 dp touch targets, body ≥ 16.
+- **Compare offices**: one day under every method, offset vs. the user's method found by label
+  search ±3 days (falling back to next-month starts for a 30th the other office doesn't have), plus
+  when each office began its month. The ±adjustment is **not** applied there (raw calendars).
+- **Occasions**: today → same Hijri date next year (each occasion once), grouped by Hijri month,
+  All / Mourning / Celebrations, countdown, share each as an image.
+- **Hijri birthday**: birth date entered in either calendar, stored as a JDN on the phone only;
+  next Hijri birthday (a 30th in a 29-day month falls on the 29th), age in Hijri vs Gregorian.
+- **Fasting days** — list only, no notifications (user's choice). Rules from the marjas' own texts
+  (Sistani *Islamic Laws* r.1716/1707/1715, *Minhaj* 1063–1066; Khamenei رساله نماز و روزه 976–980;
+  Fadlallah's treatise): first/middle/last Thursday–Wednesday–Thursday, White Days, Rajab and
+  Sha'ban, 27 Rajab, 17 Rabi' al-Awwal, 25 Dhu al-Qi'dah, 18 and 24 Dhu al-Hijjah, Arafah (caution
+  when the month start isn't official). "Sistani's list": 1–8 Dhu al-Hijjah, 1/3/7 Muharram, 4–9
+  Shawwal. Never: Ramadan, the two Eids, Ashura (shown as "abstain until after Asr").
+- **Crescent forecast**: the build script's Odeh rule on the phone — **keep the copies in sync**;
+  the tests assert they reproduce the Sistani table and every predicted Iran month (1440–1450)
+  exactly. Conjunction time, the 29th/30th evenings for Beirut, Najaf and Iran (best city), and each
+  office's expected 1st. Computed off the main thread with a "Calculating…" state.
+- **Days between**: days, weeks, and the span in the chosen calendar.
+- **Share** sends a picture of the result card (night panel + moon, badges, occasions) with the
+  method as a footer and the sentence as the caption.
 
-**App icon**: original — gold crescent (Hijri) holding a small sun (Gregorian) inside two
-conversion arrows, on the indigo tile. Geometry lives in **two places that must stay in sync**:
-[`AppLogo.tsx`](./src/components/brand/AppLogo.tsx) and [`scripts/generate-icons.js`](./scripts/generate-icons.js)
-(which writes `assets/brand/*.svg` + every Android/iOS icon). Native splash is regenerated from
-`assets/brand/splash-logo.svg` (command in help.md).
+## UI conventions (both apps)
 
-## Known gotchas hit during setup
+- **Converter = draft + Convert button** (user, 2026-10-20): **don't convert while the wheels
+  turn.** The wheels edit a draft (a JDN + direction); Convert scrolls to the result, shows a
+  skeleton + "Converting…" for 550 ms, then applies. The result always shows the last *applied*
+  conversion with a "showing the previous result" note when the wheels moved since.
+- Wheel pickers (native date pickers can't show Hijri months): 44 dp rows, 5 visible, snapping.
+- Tabs: a pager that follows the finger; **in Arabic the pages and the tab bar mirror together**.
+  Tool pages slide in from the reading direction's end.
+- Loading: the system splash (night `#110D2E`, 120 dp emblem) hands off to an animated loading
+  screen whose first frame is identical; min 1.2 s. Respects reduced motion.
+- Counted phrases ("3 years and 2 months", "٣ سنوات وشهران") come from `Plural`, not i18next
+  plurals. **After a preposition** ("بعد {{days}}") use `countPhrase(…, afterPreposition = true)`:
+  Arabic then needs the genitive dual (بعد يومين — "بعد يومان" was a real v1 bug).
+- Arabic UI shows Arabic-Indic digits (`localizeDigits`); Gregorian month names are Levantine.
+- New strings go in **both** `en.json` and `ar.json`, in both apps' copies (CI compares them).
+- Colours only from theme tokens ("Lunar Indigo": indigo primary `#4B3AC0` / dark `#A99CFF`, gold
+  accent, hero gradient `#2B1F7A → #5A47D6`, all text pairs ≥ 4.5:1); icons only lucide; touch
+  targets ≥ 48 dp/pt; body text ≥ 16.
+- **App icon / emblem**: gold crescent holding a small sun inside two conversion arrows on the
+  indigo tile. Geometry lives in `android/scripts/generate-icons.js` and both apps' `AppLogo` —
+  keep them in sync.
 
-- **RN CLI init bugs** (same as lexitoon): Kotlin sources landed in `java/com/com.devlance.hijriconverter/`
-  (fixed to `java/com/devlance/hijriconverter/`), and `package.json` "name" was the package id.
-- RN 0.87 removed `StatusBar` `backgroundColor`/`translucent` props (edge-to-edge is the default)
-  and `StyleSheet.absoluteFillObject` (use `StyleSheet.absoluteFill`, now a plain object).
-- **Never wrap `Pressable` with `Animated.createAnimatedComponent`** — it silently stops receiving
-  touches on RN 0.87 + Reanimated 4 + Fabric (lexitoon's hard-won lesson). Use
-  [`PressableScale`](./src/components/ui/PressableScale.tsx) (plain Pressable, animated child).
-- Android draws by **elevation before zIndex** — an overlapping element (the converter's arrow
-  bubble) needs a higher `elevation` than the cards it overlaps.
-- `MainActivity.onCreate` uses `RNScreensFragmentFactory` + `RNBootSplash.init` (react-native-screens
-  ≥ 4.16 variant from the bootsplash docs). Don't drop either.
-- **"ninja: error: Stat(…): Filename longer than 260 characters"** on the first build. The
-  New-Architecture codegen object paths embed the project path twice
-  (`…/.cxx/RelWithDebInfo/<hash>/arm64-v8a/rngesturehandler_codegen_autolinked_build/CMakeFiles/…/D_/workspace/me/Gregorian-hijri-date-converter/node_modules/react-native-gesture-handler/shared/shadowNodes/…`,
-  393 chars). CMake only hash-shortens object paths when the result fits in 250 chars, and this
-  project's path is 22 chars longer than lexitoon's — just enough to break it. Windows
-  `LongPathsEnabled` is already 1 on this machine, but the SDK's default CMake 3.22.1 bundles Ninja
-  1.10.2, which ignores it. **Fix: `android/app/build.gradle` pins `externalNativeBuild.cmake.version
-  "3.31.6"` (Ninja 1.12.1, long-path aware)**; it was installed with
-  `sdkmanager "cmake;3.31.6"` and AGP auto-downloads it elsewhere. Don't remove the pin.
-- `.gitattributes` forces LF on `android/gradlew` (this machine has `core.autocrlf=true`).
+## Gotchas
 
-### Found on the first emulator run (2026-10-20)
-
-- **Never size an `<Svg>` background with `width="100%"`/`height="100%"`** (or `%` inside it).
-  On Android it was resolved once and didn't follow its parent as content grew — the Today card's
-  gradient stopped at ~85% width / short of the bottom, leaving text and the watermark hanging
-  outside it. Use [`GradientFill`](./src/components/ui/GradientFill.tsx) (measures the parent with
-  onLayout, draws at pixel size) and give the parent a solid fallback `backgroundColor`.
-- **Don't toggle `backgroundColor` on a rounded view to show a selected state inside a ripple
-  `Pressable`** — the tab bar's pill rendered as a square after switching tabs (Fabric, Android).
-  The pill now keeps a permanently painted, rounded highlight layer and only toggles its
-  `opacity`; the tab buttons use a pressed-opacity instead of `android_ripple`. Other rounded
-  views (cards, tiles, chips) survived theme switches fine — this was specific to that combination.
-- **Same-direction VirtualizedList inside a ScrollView** → red "VirtualizedLists should never be
-  nested…" console error. The wheel picker is a plain ScrollView for this reason (see above).
-- **Two library warnings are patched with patch-package** (`patches/`, applied by `postinstall`):
-  - `react-native+0.87.1.patch` — adds `./src/private/*` to RN's `exports` (RN's own
-    `@react-native/virtualized-lists` imports `src/private/featureflags/…`; Metro warned on every
-    bundle). Same patch as lexitoon.
-  - `react-native-gesture-handler+3.2.1.patch` — creates the legacy `DrawerLayoutAndroid` wrapper
-    lazily, so importing gesture-handler no longer reads RN's deprecated `DrawerLayoutAndroid`
-    getter ("DrawerLayoutAndroid is deprecated…" on every launch). Metro loads gesture-handler's
-    TS source (`src/`, via its `react-native` field), so that's what the patch edits.
-  Re-check both when upgrading RN or gesture-handler; delete a patch once upstream fixes it.
-- RN 0.87's LogBox shows warnings only as "Open debugger to view warnings". To read them without a
-  debugger: `adb logcat -s ReactNativeJS:V` (every `console.*` lands there).
-- **"Rendered more hooks than during the previous render" with `performReactRefresh` in the
-  stack is a Fast Refresh artifact**, not an app bug: saving a component that gained/lost hooks
-  while the user is interacting makes React try to keep the old instance's state. Reload the app
-  (`r` in Metro). A clean relaunch + 10 rapid taps on the converter's direction toggle showed no
-  error. Only investigate if it reproduces after a full reload.
-- On Windows (no watchman) **Metro can hang after `yarn add` rewrites `node_modules` under it** —
-  `/status` stops answering and the app sits on the native splash. Restart it with
-  `yarn start --reset-cache` (the `--reset-cache` also matters after patch-package changes).
-- On Windows, run Gradle directly (`cd android && ./gradlew …`) — lexitoon found
-  `npx react-native run-android`'s Gradle spawn unreliable here. See help.md.
-
-## Commands
-
-```
-yarn install            # deps (Yarn 1 only)
-yarn start              # Metro
-yarn android            # build + install + run (or Gradle directly, see help.md)
-yarn test               # Jest — calendar engine golden tests
-yarn typecheck          # tsc --noEmit
-yarn lint               # eslint
-yarn bump [patch|minor|major] [--dry-run]   # version bump (package.json + build.gradle + pbxproj)
-node scripts/build-hijri-tables.js [--calibrate]   # regenerate / re-check the month tables
-node scripts/generate-icons.js                     # regenerate launcher icons
-node scripts/generate-moon.js                      # regenerate the moon-phase texture (assets/moon/)
-```
-
-## Conventions to keep following
-
-- Yarn, not npm. Relative imports.
-- Every new direction-sensitive layout mirrors by hand via `useDirection()`.
-- New user-facing strings go in **both** `src/i18n/locales/en.json` and `ar.json`.
-- Colors only from theme tokens; icons only from lucide; touch targets ≥ 48 dp.
-- Keep `TODO.md` checkboxes current; keep this file current when a convention or calendar
-  constant changes.
+- **Android regex is ICU**: `\d` matches all Unicode digits (Arabic-Indic too) and `(?U)` throws —
+  JVM tests pass either way. Use explicit `[0-9]`.
+- Android draws elevation before zIndex — overlapping elements need a higher elevation.
+- Windows: a shell whose working directory is inside a folder keeps it from being renamed/deleted.
+- Emulators are shared with other Claude sessions: always `adb -s <serial>`, never `adb kill-server`.
+  This project uses AVD **Pixel_7** on port **5560** (`emulator -avd Pixel_7 -port 5560`).
+- UI Automator can't dump a screen that animates forever (v1's onboarding/loading) — turn animator
+  scales off for scripted runs, back on for visual checks.

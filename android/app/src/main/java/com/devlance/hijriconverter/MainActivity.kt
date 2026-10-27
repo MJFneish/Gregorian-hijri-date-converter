@@ -1,34 +1,29 @@
 package com.devlance.hijriconverter
 
 import android.os.Bundle
-import com.facebook.react.ReactActivity
-import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
-import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory
-import com.zoontek.rnbootsplash.RNBootSplash
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
-class MainActivity : ReactActivity() {
-
-  /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
-   * rendering of the component.
-   */
-  override fun getMainComponentName(): String = "HijriConverter"
-
-  /**
-   * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-   * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
-   */
-  override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
-
+class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
-    // react-native-screens >= 4.16: restore fragments through its own factory.
-    supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
-    // Native splash (night background + emblem) until JS calls BootSplash.hide() — App.tsx hides
-    // it as soon as the matching JS LoadingScreen has laid out, so the hand-off is seamless.
-    RNBootSplash.init(this, R.style.BootTheme)
+    installSplashScreen()
     super.onCreate(savedInstanceState)
+    // The night background needs light status/navigation bar icons.
+    enableEdgeToEdge(SystemBarStyle.dark(android.graphics.Color.TRANSPARENT), SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
+    setContent {
+      Box(Modifier.fillMaxSize().background(Color(0xFF110D2E)), contentAlignment = Alignment.Center) {
+        Text("Hijri Converter v${BuildConfig.VERSION_NAME}", color = Color.White)
+      }
+    }
   }
 }

@@ -1,78 +1,26 @@
-# OSX
-#
+# OS / editors
 .DS_Store
-
-# Xcode
-#
-build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-**/.xcode.env.local
-
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
+.idea/
 *.iml
-*.hprof
-.cxx/
-*.keystore
-!debug.keystore
-.kotlin/
+.vscode/
 
-# node.js
-#
+# Node tooling (android/package.json)
 node_modules/
 npm-debug.log
 yarn-error.log
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# Android (more in android/.gitignore): release APKs from `yarn build:apk`
+android/dist/
 
-**/fastlane/report.xml
-**/fastlane/Preview.html
-**/fastlane/screenshots
-**/fastlane/test_output
+# iOS: the Xcode project is generated from ios/project.yml (`xcodegen generate`)
+ios/*.xcodeproj/
+ios/build/
+ios/HijriCore/.build/
+ios/HijriCore/.swiftpm/
+xcuserdata/
+DerivedData/
+*.xcuserstate
 
-# Bundle artifact
-*.jsbundle
-
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-
-# testing
-/coverage
-
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Release APKs of the native app (yarn build:apk)
-/dist/
+# Signing keys — except the public React Native template key every release is signed with
+*.keystore
+!android/app/debug.keystore
