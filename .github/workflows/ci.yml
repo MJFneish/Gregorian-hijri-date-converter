@@ -1,0 +1,132 @@
+name: CI
+
+# Unit tests of both apps on every push to develop and to ci/** (work in progress), and on PRs —
+# Android (android/, Kotlin) on Linux, iOS (ios/, Swift) on macOS — plus an iOS UI smoke test whose
+# screenshots are uploaded (the iOS app can't be built on the development machine). The Android
+# release APK builds only on demand (Actions → CI → Run workflow); releases are built locally with
+# `yarn build:apk` in android/.
+on:
+  push:
+    branches: [develop, 'ci/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      build_apk:
+        description: Also build the Android release APK (uploaded as a workflow artifact)
+        type: boolean
+        default: false
+
+# A newer push supersedes an older push's checks, but never cancels a requested APK build.
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests
+        working-directory: android
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+  # Both apps carry identical copies of the strings.
+  shared-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Android and iOS copies are identical
+        run: |
+          set -e
+          for f in en.json ar.json; do
+            cmp "android/app/src/main/assets/i18n/$f" "ios/HijriCore/Sources/HijriCore/Resources/i18n/$f"
+          done
+
+  # No Xcode on the development machine (Windows): the iOS app is built and tested here.
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Engine and app-logic tests (swift test)
+        working-directory: ios/HijriCore
+        run: swift test
+      - name: Generate the Xcode project
+        working-directory: ios
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Pick a simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          ios = sorted((k for k in devices if 'iOS' in k), key=lambda k: [int(x) for x in k.split('iOS-')[1].split('-')])
+          phones = [d for d in devices[ios[-1]] if d['name'].startswith('iPhone')]
+          print(phones[0]['udid'])")
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID" || true
+      - name: Build the app, run the UI smoke test
+        working-directory: ios
+        shell: bash
+        run: |
+          set -o pipefail
+          FORMAT=cat
+          command -v xcbeautify >/dev/null && FORMAT="xcbeautify --renderer github-actions"
+          xcodebuild test \
+            -project HijriConverter.xcodeproj -scheme HijriConverter \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -resultBundlePath build/HijriConverter.xcresult \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | $FORMAT
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-screenshots
+          path: ~/hijri-screenshots
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ios-xcresult
+          path: ios/build/HijriConverter.xcresult
+          if-no-files-found: ignore
+
+  apk:
+    if: github.event_name == 'workflow_dispatch' && inputs.build_apk
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      # Signed with android/app/debug.keystore — the key every release so far carries — so the APK
+      # installs over them as an update.
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Name the APK like `yarn build:apk`
+        id: name
+        run: |
+          VERSION=$(grep '^VERSION_NAME=' android/version.properties | cut -d= -f2)
+          CODE=$(grep '^VERSION_CODE=' android/version.properties | cut -d= -f2)
+          echo "file=HijriConverter-v${VERSION}-build${CODE}" >> "$GITHUB_OUTPUT"
+          mv android/app/build/outputs/apk/release/app-release.apk "HijriConverter-v${VERSION}-build${CODE}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.file }}
+          path: ${{ steps.name.outputs.file }}.apk
+          retention-days: 30

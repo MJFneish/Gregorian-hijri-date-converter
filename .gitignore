@@ -24,3 +24,4 @@ DerivedData/
 # Signing keys — except the public React Native template key every release is signed with
 *.keystore
 !android/app/debug.keystore
+ios/HijriConverter/Info.plist
